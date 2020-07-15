@@ -1,20 +1,52 @@
-import { Search } from 'semantic-ui-react'
+import { Search , SearchProps } from 'semantic-ui-react'
 import React from 'react';
+import {Subject} from 'rxjs'
+import {distinctUntilChanged, debounceTime, debounce, throttleTime, throttle, flatMap} from 'rxjs/operators'
+import { APIRequest } from '../Util/R6StatAPIRequest';
+import { RANKAPI,GENERALAPI } from '../Util/Entity';
 
-
-interface Props {
-    text: String,
+interface Props extends SearchProps {
 }
-export default class R6Search extends React.Component {
-    //github
+
+interface State {
+  value : string;
+}
+
+export default class R6IDSearch extends React.Component<Props, State> {
+
+  private subject = new Subject<string>();
+
+  constructor(props: Props){
+    super(props);
+
+    this.state = {
+      value : ""
+    }
+
+    this.subject.asObservable().pipe(
+      throttleTime(100),
+      distinctUntilChanged(),
+      flatMap( (value) => {
+        return APIRequest<GENERALAPI>(value);
+      })
+    ).subscribe(
+      res => console.log(res)
+    )
 
 
+  }
 
-    render() {
-        return(
-          <>
-          </>
-        )
+  render() {
+      return(
+        <>
+          <Search
+              onSearchChange={(event, {value} )=>{this.subject.next(value)}}
+              placeholder={"아이디를 입력해주세요"}
+              value={this.state.value}
+              {...this.props}
+          ></Search>
+        </>
+      )
     }
 }
 
