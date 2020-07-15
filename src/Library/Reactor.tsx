@@ -1,7 +1,8 @@
-import { Observable, Subject, bindCallback, of } from 'rxjs'
-import { flatMap, startWith, scan, share, map} from 'rxjs/operators'
+import { Observable, Subject, bindCallback, of , asyncScheduler, Scheduler, empty} from 'rxjs'
+import { flatMap, startWith, scan, share, map , observeOn, catchError, shareReplay, tap} from 'rxjs/operators'
 import React from 'react';
 
+type Diff<T, U> = T extends U ? never : T
 
 abstract class Reactor<Action, State = {}, Mutation = Action> {
 
@@ -10,71 +11,103 @@ abstract class Reactor<Action, State = {}, Mutation = Action> {
     currentState! : State
     state!: Observable<State>
 
-    constructor(initialState : State){
+    protected scheduler : Scheduler = asyncScheduler;
 
+    constructor(initialState : State){
+        //Diff<Mutation,Action>
+        //type Omit<T, U extends keyof T> = Pick<T, Exclude<keyof T, U>>
+        //https://rinae.dev/posts/helper-types-in-typescript
         this.initialState = initialState;
-        let mutation = this.action.pipe( 
+        this.state = this.createStream();
+    }
+    
+    
+
+    abstract mutate(action : Action): Observable<Mutation>;
+    abstract reduce(state: State, mutation: Mutation): State;
+    abstract transformAction(action: Observable<Action>): Observable<Action>;
+    abstract transformMutation(mutation: Observable<Mutation>): Observable<Mutation>;
+    abstract transformState(state: Observable<State>): Observable<State>;
+
+
+    private createStream(): Observable<State> {
+
+        let action = this.action.pipe( observeOn(this.scheduler))
+        let transformedAction : Observable<Action> = this.transformAction(action);
+        let mutation = transformedAction.pipe( 
             flatMap(
                 (action) => {
                     return this.mutate(action);
                 }
             )
         )
-
-        this.state = mutation.pipe(
-            scan(( state, mutate) => {
+        let transformedMutation : Observable<Mutation> = this.transformMutation(mutation);
+        let state = transformedMutation.pipe(
+            scan((state, mutate) => {
                 return this.reduce( state, mutate );
-            }, this.initialState)
+            }, this.initialState),
+            catchError( (err, caught) => {
+                return empty()
+            })
             ,startWith(this.initialState),
-            share()
         )
 
-        this.state.subscribe(
-            res=> {
-                this.currentState = res;
-                console.log(res);
-            }
+        let transformedState : Observable<State> = this.transformState(state)
+        .pipe(
+            tap((state) => {
+                this.currentState = state
+            }),
+            shareReplay(1)
         )
-          
+
+        return transformedState;
     }
 
-    abstract mutate(action : Action): Observable<Mutation>;
-    abstract reduce(state: State, mutation: Mutation): State;
-
 }
-
-
 
 
 interface State {
-    isLoading: boolean
+    value: number
 }
 
-export const TOGGLE = 'TOGGLE'
+export const INCREASE = 'INCREASE'
+export const DECREASE = 'DECREASE'
 
-interface ToggleAction {
-    type: typeof TOGGLE
-    value: boolean
+interface INCREASEACTION { 
+    type: typeof INCREASE
+}
+interface DECREASEACTION { 
+    type: typeof DECREASE
 }
 
-export type ActionType = ToggleAction
+export type ActionType = INCREASEACTION | DECREASEACTION
   
+
 class TestReactor extends Reactor<ActionType,State> {
 
-    mutate(action: ToggleAction): Observable<ToggleAction> {
-        switch(action.type){
-            case "TOGGLE":
-                return of(action)
+    mutate(action: ActionType): Observable<ActionType> {
+        return of(action);
+    }
+    reduce(state: State, mutation: ActionType): State {
+        let newState = state;
+        switch(mutation.type) {
+            case "DECREASE":
+                newState.value = newState.value - 1; 
+                return newState;
+            case "INCREASE":
+                newState.value = newState.value + 1; 
+                return newState;
         }
     }
 
-    reduce(state: State, mutation: ToggleAction): State {
-        let newState = state;
-        switch(mutation.type) {
-            case "TOGGLE" :
-                newState.isLoading = !newState.isLoading;
-                return newState;
-        }
+    transformAction(action: Observable<ActionType>): Observable<ActionType> {
+        return action
+    }
+    transformMutation(mutation: Observable<ActionType>): Observable<ActionType> {
+        return mutation
+    }
+    transformState(state: Observable<State>): Observable<State> {
+        return state
     }
 }
 
@@ -86,19 +119,18 @@ export class View extends React.Component<{},State> {
     constructor(props: {}){
         super(props);
         this.state = {
-            isLoading : false
+            value : 0
         }
 
         this.reactor = new TestReactor(this.state);
         this.viewAction.subscribe(this.reactor.action);
 
         this.reactor.state.pipe(
-            map( value => value.isLoading )
+            map( state => state.value )
         ).subscribe(
-            res=>this.setState({isLoading: res})
+            value=>this.setState({ value })
         )
     }
-
 
     render(){
 
@@ -109,7 +141,19 @@ export class View extends React.Component<{},State> {
 
         return(
             <>
-                <div onClick={()=> {this.viewAction.next({ type:"TOGGLE", value: this.state.isLoading})}}> {(this.state.isLoading)? "abc" : "def"} </div>
+                <div>
+                    Counter
+                </div>
+                <div>
+                    {this.state.value}
+                </div>
+                <button onClick={()=>{this.viewAction.next({type:"INCREASE"})}}>
+                    +
+                </button>
+                <button onClick={()=>{this.viewAction.next({type:"DECREASE"})}}>
+                    -
+                </button>
+
             </>
         )
 
