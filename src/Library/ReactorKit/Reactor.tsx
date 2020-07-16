@@ -1,15 +1,18 @@
 import { Observable, Subject, bindCallback, of , asyncScheduler, Scheduler, empty} from 'rxjs'
 import { flatMap, startWith, scan, share, map , observeOn, catchError, shareReplay, tap} from 'rxjs/operators'
 import React from 'react';
+import { Stub } from './Stub';
+import { DisposeBag } from './DisposeBag';
 
-type Diff<T, U> = T extends U ? never : T
 
-abstract class Reactor<Action, State = {}, Mutation = Action> {
+export abstract class Reactor<Action = {}, State = {}, Mutation = Action> {
 
-    action : Subject<Action> = new Subject<Action>();
+    action : Subject<Action>;
     initialState! : State
     currentState! : State
     state!: Observable<State>
+    isStubEnabled: boolean = false;
+    stub: Stub<Action,State,Mutation> = new Stub(this, new DisposeBag());
 
     protected scheduler : Scheduler = asyncScheduler;
 
@@ -18,10 +21,31 @@ abstract class Reactor<Action, State = {}, Mutation = Action> {
         //type Omit<T, U extends keyof T> = Pick<T, Exclude<keyof T, U>>
         //https://rinae.dev/posts/helper-types-in-typescript
         this.initialState = initialState;
-        this.state = this.createStream();
+
+        if (this.isStubEnabled) {
+            this.state = this.stub.state.asObservable()
+            this.action = this.stub.action;
+        } else {
+            this.action = new Subject<Action>();
+            this.state = this.createStream();
+        }
+
+
+        // this.state = this.createStream();
     }
+
+    // get _state() {
+    //     if (this.isStubEnabled){
+    //         return this.stub.state.asObservable()
+    //     } else {
+    //         return this.createStream();
+    //     }
+    // }
     
-    
+    // get state() {
+    //     return this._state;
+    // }
+
 
     abstract mutate(action : Action): Observable<Mutation>;
     abstract reduce(state: State, mutation: Mutation): State;
@@ -41,6 +65,7 @@ abstract class Reactor<Action, State = {}, Mutation = Action> {
                 }
             )
         )
+
         let transformedMutation : Observable<Mutation> = this.transformMutation(mutation);
         let state = transformedMutation.pipe(
             scan((state, mutate) => {
@@ -82,12 +107,12 @@ interface DECREASEACTION {
 
 export type ActionType = INCREASEACTION | DECREASEACTION
   
-
 class TestReactor extends Reactor<ActionType,State> {
 
     mutate(action: ActionType): Observable<ActionType> {
         return of(action);
     }
+
     reduce(state: State, mutation: ActionType): State {
         let newState = state;
         switch(mutation.type) {
@@ -111,6 +136,8 @@ class TestReactor extends Reactor<ActionType,State> {
     }
 }
 
+
+
 export class View extends React.Component<{},State> {
 
     private reactor! : TestReactor;
@@ -121,6 +148,8 @@ export class View extends React.Component<{},State> {
         this.state = {
             value : 0
         }
+
+
 
         this.reactor = new TestReactor(this.state);
         this.viewAction.subscribe(this.reactor.action);
@@ -159,3 +188,5 @@ export class View extends React.Component<{},State> {
 
     }
 }
+
+console.log(View);
