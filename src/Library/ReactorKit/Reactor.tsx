@@ -3,6 +3,7 @@ import { flatMap, startWith, scan, share, map , observeOn, catchError, shareRepl
 import React from 'react';
 import { Stub } from './Stub';
 import { DisposeBag } from './DisposeBag';
+import { connect } from 'http2';
 
 
 export abstract class Reactor<Action = {}, State = {}, Mutation = Action> {
@@ -30,6 +31,7 @@ export abstract class Reactor<Action = {}, State = {}, Mutation = Action> {
             this.state = this.createStream();
         }
 
+        
 
         // this.state = this.createStream();
     }
@@ -189,4 +191,36 @@ export class View extends React.Component<{},State> {
     }
 }
 
-console.log(View);
+setHiddenProp(View.prototype, "props")
+
+export function setHiddenProp(target: object, prop: string ): void {
+
+    console.log(target)
+    console.log(prop)
+    console.log(Object.hasOwnProperty.call(target, prop))
+    // if (!Object.hasOwnProperty.call(target, prop)) {
+    // }
+
+
+    // if (!Object.hasOwnProperty.call(target, prop)) {
+    //     Object.defineProperty(target, prop, {
+    //         enumerable: false,
+    //         configurable: true,
+    //         writable: true,
+    //         value
+    //     })
+    // } else {
+    //     target[prop] = value
+    // }
+
+    // if (!Object.hasOwnProperty.call(target, prop)) {
+    //     Object.defineProperty(target, prop, {
+    //         enumerable: false,
+    //         configurable: true,
+    //         writable: true,
+    //         value
+    //     })
+    // } else {
+    //     target[prop] = value
+    // }
+}

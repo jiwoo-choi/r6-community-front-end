@@ -1,12 +1,12 @@
 import React from 'react';
 import logo from './logo.svg';
 import './App.css';
-import R6CommunityEditor from './Component/R6CommunityEditor';
 import 'semantic-ui-css/semantic.min.css'
 import { View } from './Library/ReactorKit/Reactor';
 
 function App() {
 
+  
   return (
 
     <div className="App">
