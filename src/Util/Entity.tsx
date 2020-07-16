@@ -3,13 +3,44 @@ export interface SEASONAPI {
     seasonData : RANKBYREGION[];
 }
 
-export type RegionType = "ncsa" | "apac" | "emea" | "global"
-export type PlatformType = "uplay" | "psn" | "xbl"
 
+function stringLiterals<T extends string>(...args: T[]): T[] { return args; }
+type ElementType<T extends ReadonlyArray<unknown>> = T extends ReadonlyArray<infer ElementType> ? ElementType : never;
+
+export const RegionTypeData = stringLiterals("ncsa", "apac", "emea", "global");
+export type RegionType = ElementType<typeof RegionTypeData>;
+
+const PlatformTypeData = stringLiterals("uplay","psn","xbl");
+export type PlatformType= ElementType<typeof RegionTypeData>;
+
+
+export interface SearchResultType {
+    title: string,
+    description: string,
+    key:string,
+}
+
+export interface SearchResultCategoryType {
+    [key:string] : {
+        name: string
+        results: SearchResultType[]
+    }
+}
+
+export type DataType = "generalpvp"
+
+// 타입합치기 ReactorKit에 이쓴ㄴ것처럼.. 타입하
 export interface RANKBYREGION {
     region: RegionType;
     rankStat: RANKAPI;
 }
+
+export type errorMessageCode = 400 | 401 | 404 | 0 
+export interface BasicErrorFormat {
+    status: errorMessageCode;
+    message: any;
+}
+
 
 export interface RANKAPI {
     maxMmr: number;

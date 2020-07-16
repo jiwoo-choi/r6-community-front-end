@@ -1,48 +1,90 @@
-import { Search , SearchProps } from 'semantic-ui-react'
+import { Search , SearchProps, Header, SearchResultProps, SearchCategoryProps } from 'semantic-ui-react'
 import React from 'react';
-import {Subject} from 'rxjs'
-import {distinctUntilChanged, debounceTime, debounce, throttleTime, throttle, flatMap} from 'rxjs/operators'
-import { APIRequest } from '../Util/R6StatAPIRequest';
-import { RANKAPI,GENERALAPI } from '../Util/Entity';
+import { Subject, from } from 'rxjs'
+
+
+import { StoreAcceptable } from '../Util/Types';
+import R6IDSearchStore from './R6IDSearchStore';
+import { observer } from 'mobx-react';
+import { observable } from 'mobx';
+import { toStream } from 'mobx-utils';
+import { distinctUntilChanged, throttleTime, debounceTime } from 'rxjs/operators';
+import { GENERALAPI, RANKAPI, SearchResultType } from '../Util/Entity';
 
 interface Props extends SearchProps {
+  dataClicked: (data: RANKAPI, platform: string, id : string) => void;
 }
 
 interface State {
   value : string;
 }
 
-export default class R6IDSearch extends React.Component<Props, State> {
+const Result = () => {
 
-  private subject = new Subject<string>();
+}
 
-  constructor(props: Props){
-    super(props);
+//Math.random().toString(36).substr(2,11)} id={Math.random().toString(36).substr(2,11)}
+const ResultRenderer = ({ title, description, rankstring } : any) => {  
+  return (
+    <div>
+      <Header size={"medium"}> {rankstring} </Header>
+      <Header.Subheader> {description} </Header.Subheader>
+    </div>
+  )
+}
 
-    this.state = {
-      value : ""
-    }
+@observer
+export default class R6IDSearch extends React.Component<Props & StoreAcceptable<R6IDSearchStore>> {
 
-    this.subject.asObservable().pipe(
-      throttleTime(100),
+  // private subject = new Subject<string>();
+
+  // constructor(props: Props & StoreAcceptable<R6IDSearchStore>){
+  //   super(props);
+
+  componentDidMount(){
+
+    from(toStream(() => this.props.store.searchText))
+    .pipe(
       distinctUntilChanged(),
-      flatMap( (value) => {
-        return APIRequest<GENERALAPI>(value);
-      })
+      debounceTime(500),
     ).subscribe(
-      res => console.log(res)
+      res => this.props.store.search(res)
     )
-
-
   }
+  
+    
+  //   // this.subject.asObservable().pipe(
+  //   //   distinctUntilChanged(),
+  //   //   flatMap( (value) => {
+  //   //     this.setState({value});
+  //   //     return APIRequest<GENERALAPI>(value);
+  //   //   }),
+  //   //   catchError( (err, caught) => {
+  //   //     return caught
+  //   //   })
+  //   // ).subscribe(
+  //   //   res => console.log(res),
+  //   //   err => console.log(err)
+  //   // )
+  // }
+  
+
+  
 
   render() {
       return(
         <>
           <Search
-              onSearchChange={(event, {value} )=>{this.subject.next(value)}}
-              placeholder={"아이디를 입력해주세요"}
-              value={this.state.value}
+              noResultsMessage={"전적 결과가 없습니다"}
+              loading={this.props.store.searchLoading}
+              results={
+                this.props.store.resultParsed
+              }
+              onResultSelect={(event, {result}) => {this.props.dataClicked(result.rankdata, result.description, this.props.store.searchText)}}
+              resultRenderer={ResultRenderer}
+              onSearchChange={(event, {value} )=>{ this.props.store.changeSearchText(value)}}
+              placeholder={"본인의 랭크 전적을 검색하여 내용에 추가해보세요!"}
+              value={this.props.store.searchText}
               {...this.props}
           ></Search>
         </>
@@ -50,86 +92,4 @@ export default class R6IDSearch extends React.Component<Props, State> {
     }
 }
 
-
-// {
-//     "isLoading": false,
-//     "results": {
-//       "capacitor": {
-//         "name": "capacitor",
-//         "results": [
-//           {
-//             "title": "Ernser and Sons",
-//             "description": "Grass-roots 3rd generation concept",
-//             "image": "https://s3.amazonaws.com/uifaces/faces/twitter/renbyrd/128.jpg",
-//             "price": "$95.52"
-//           },
-//           {
-//             "title": "Bins, Braun and Franecki",
-//             "description": "User-friendly actuating hardware",
-//             "image": "https://s3.amazonaws.com/uifaces/faces/twitter/yayteejay/128.jpg",
-//             "price": "$37.11"
-//           },
-//           {
-//             "title": "Corkery and Sons",
-//             "description": "Organized holistic access",
-//             "image": "https://s3.amazonaws.com/uifaces/faces/twitter/gojeanyn/128.jpg",
-//             "price": "$4.38"
-//           },
-//           {
-//             "title": "Bahringer Inc",
-//             "description": "Adaptive tangible paradigm",
-//             "image": "https://s3.amazonaws.com/uifaces/faces/twitter/blakesimkins/128.jpg",
-//             "price": "$58.57"
-//           }
-//         ]
-//       },
-//       "array": {
-//         "name": "array",
-//         "results": [
-//           {
-//             "title": "Botsford, Brakus and Feil",
-//             "description": "Devolved tangible customer loyalty",
-//             "image": "https://s3.amazonaws.com/uifaces/faces/twitter/marcomano_/128.jpg",
-//             "price": "$45.41"
-//           }
-//         ]
-//       },
-//       "microchip": {
-//         "name": "microchip",
-//         "results": [
-//           {
-//             "title": "Connelly, Tillman and Leuschke",
-//             "description": "Optimized didactic intranet",
-//             "image": "https://s3.amazonaws.com/uifaces/faces/twitter/2fockus/128.jpg",
-//             "price": "$79.68"
-//           },
-//           {
-//             "title": "Baumbach - Luettgen",
-//             "description": "User-friendly client-driven throughput",
-//             "image": "https://s3.amazonaws.com/uifaces/faces/twitter/omnizya/128.jpg",
-//             "price": "$54.44"
-//           },
-//           {
-//             "title": "Blanda, Hickle and Satterfield",
-//             "description": "Compatible human-resource productivity",
-//             "image": "https://s3.amazonaws.com/uifaces/faces/twitter/cloudstudio/128.jpg",
-//             "price": "$74.64"
-//           },
-//           {
-//             "title": "Flatley, O'Conner and Hudson",
-//             "description": "Business-focused multi-tasking initiative",
-//             "image": "https://s3.amazonaws.com/uifaces/faces/twitter/nastya_mane/128.jpg",
-//             "price": "$67.30"
-//           },
-//           {
-//             "title": "Hoppe, Parisian and Little",
-//             "description": "Multi-channelled coherent firmware",
-//             "image": "https://s3.amazonaws.com/uifaces/faces/twitter/juangomezw/128.jpg",
-//             "price": "$57.86"
-//           }
-//         ]
-//       }
-//     },
-//     "value": "a"
-//   }
-  
+// 
