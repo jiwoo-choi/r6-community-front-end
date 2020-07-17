@@ -3,7 +3,6 @@ import { flatMap, startWith, scan, share, map , observeOn, catchError, shareRepl
 import React from 'react';
 import { Stub } from './Stub';
 import { DisposeBag } from './DisposeBag';
-import { Action } from 'rxjs/internal/scheduler/Action';
 
 
 export abstract class Reactor<Action = {}, State = {}, Mutation = Action> {
