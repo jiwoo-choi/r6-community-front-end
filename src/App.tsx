@@ -2,11 +2,10 @@ import React from 'react';
 import logo from './logo.svg';
 import './App.css';
 import 'semantic-ui-css/semantic.min.css'
-import { View } from './Library/ReactorKit/Reactor';
+import { View, TestReactor } from './Library/ReactorKit/Reactor';
 
 function App() {
 
-  
   return (
 
     <div className="App">

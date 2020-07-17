@@ -1,21 +1,8 @@
-import { Observable } from "rxjs";
+import { Observable, of, empty } from "rxjs";
+import { catchError } from "rxjs/operators";
 
 export function catchErrorJustReturn<T>(value: T) {
-    return function(source: Observable<T>): Observable<T>{
-        return new Observable( subscriber => {
-            source.subscribe({
-                next(value) {
-                    subscriber.next(value)
-                }, 
-                error(error) {
-                    subscriber.next(value);
-                },
-                complete() {
-                    subscriber.complete();
-                }
-            })
-        })
-    }
+    return catchError( err => empty() )
 }
 
 export function filterNull<T>(justReturn:T) {

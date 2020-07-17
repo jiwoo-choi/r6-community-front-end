@@ -1,4 +1,4 @@
-import { forOwn } from 'lodash';
+// import { forOwn } from 'lodash';
 import { Subscription } from 'rxjs';
 //https://github.com/RonasIT/dispose-bag
 
@@ -19,16 +19,16 @@ export class DisposeBag {
     }
   }
 
-  public unsubscribe(name?: string): void {
-    if (name) {
-      if (this.namedSubscriptions.hasOwnProperty(name) && this.namedSubscriptions[name]) {
-        this.namedSubscriptions[name].unsubscribe();
-      }
-    } else {
-      this.subscriptions.unsubscribe();
-      forOwn(this.namedSubscriptions, (subscription) => {
-        subscription.unsubscribe();
-      });
-    }
-  }
+  // public unsubscribe(name?: string): void {
+  //   if (name) {
+  //     if (this.namedSubscriptions.hasOwnProperty(name) && this.namedSubscriptions[name]) {
+  //       this.namedSubscriptions[name].unsubscribe();
+  //     }
+  //   } else {
+  //     this.subscriptions.unsubscribe();
+  //     forOwn(this.namedSubscriptions, (subscription) => {
+  //       subscription.unsubscribe();
+  //     });
+    // }
+  // }
 }

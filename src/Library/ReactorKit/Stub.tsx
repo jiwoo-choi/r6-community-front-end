@@ -22,17 +22,19 @@ export class Stub<SAction, SState, SMutate> {
 
         const stateSubscription = this.state.asObservable()
         .subscribe(
-            state=> { reactor.currentState = state}
+            state=> { 
+                reactor.currentState =  state
+            }
         )
 
         disposeBag.add(stateSubscription);
 
         const actionSubscription = this.action.subscribe(
-            action=>this.actions.push(action)
+            action=>{
+                this.actions.push(action)
+            }
         )
 
         disposeBag.add(actionSubscription);
-
-
     }
 }

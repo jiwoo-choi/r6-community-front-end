@@ -1,52 +1,34 @@
-import { Observable, Subject, bindCallback, of , asyncScheduler, Scheduler, empty} from 'rxjs'
-import { flatMap, startWith, scan, share, map , observeOn, catchError, shareReplay, tap} from 'rxjs/operators'
+import { Observable ,Subject, bindCallback, of , asyncScheduler, Scheduler, empty, ConnectableObservable, interval, defer, from, queueScheduler, queue} from 'rxjs'
+import { flatMap, startWith, scan, share, map , observeOn, catchError, shareReplay, tap, publish, publishReplay, first, distinctUntilChanged} from 'rxjs/operators'
 import React from 'react';
 import { Stub } from './Stub';
 import { DisposeBag } from './DisposeBag';
-import { connect } from 'http2';
+import { Action } from 'rxjs/internal/scheduler/Action';
 
 
 export abstract class Reactor<Action = {}, State = {}, Mutation = Action> {
 
     action : Subject<Action>;
-    initialState! : State
-    currentState! : State
-    state!: Observable<State>
-    isStubEnabled: boolean = false;
-    stub: Stub<Action,State,Mutation> = new Stub(this, new DisposeBag());
+    // action!: ActionSubject<Action>;
+    initialState! : State;
+    currentState! : State;
+    state!: Observable<State>;
+    stub: Stub<Action,State,Mutation>;
+    protected scheduler : Scheduler = queueScheduler;
 
-    protected scheduler : Scheduler = asyncScheduler;
+    constructor(initialState : State, isStubEnabled : boolean = false){
 
-    constructor(initialState : State){
-        //Diff<Mutation,Action>
-        //type Omit<T, U extends keyof T> = Pick<T, Exclude<keyof T, U>>
-        //https://rinae.dev/posts/helper-types-in-typescript
         this.initialState = initialState;
+        this.stub = new Stub(this, new DisposeBag());
 
-        if (this.isStubEnabled) {
-            this.state = this.stub.state.asObservable()
+        if (isStubEnabled) {
             this.action = this.stub.action;
+            this.state = this.stub.state
         } else {
             this.action = new Subject<Action>();
             this.state = this.createStream();
         }
-
-        
-
-        // this.state = this.createStream();
     }
-
-    // get _state() {
-    //     if (this.isStubEnabled){
-    //         return this.stub.state.asObservable()
-    //     } else {
-    //         return this.createStream();
-    //     }
-    // }
-    
-    // get state() {
-    //     return this._state;
-    // }
 
 
     abstract mutate(action : Action): Observable<Mutation>;
@@ -55,37 +37,38 @@ export abstract class Reactor<Action = {}, State = {}, Mutation = Action> {
     abstract transformMutation(mutation: Observable<Mutation>): Observable<Mutation>;
     abstract transformState(state: Observable<State>): Observable<State>;
 
-
     private createStream(): Observable<State> {
 
-        let action = this.action.pipe( observeOn(this.scheduler))
-        let transformedAction : Observable<Action> = this.transformAction(action);
+        let transformedAction : Observable<Action> = this.transformAction(this.action);
         let mutation = transformedAction.pipe( 
             flatMap(
                 (action) => {
-                    return this.mutate(action);
+                    return this.mutate(action).pipe(catchError( err => empty()))
                 }
             )
         )
-
+        //action subject... you ne
         let transformedMutation : Observable<Mutation> = this.transformMutation(mutation);
         let state = transformedMutation.pipe(
             scan((state, mutate) => {
                 return this.reduce( state, mutate );
             }, this.initialState),
-            catchError( (err, caught) => {
+            catchError( () => {
                 return empty()
             })
             ,startWith(this.initialState),
         )
 
         let transformedState : Observable<State> = this.transformState(state)
+
         .pipe(
-            tap((state) => {
+            tap( (state) => {
                 this.currentState = state
             }),
             shareReplay(1)
         )
+
+        transformedState.subscribe();
 
         return transformedState;
     }
@@ -109,7 +92,7 @@ interface DECREASEACTION {
 
 export type ActionType = INCREASEACTION | DECREASEACTION
   
-class TestReactor extends Reactor<ActionType,State> {
+export class TestReactor extends Reactor<ActionType,State> {
 
     mutate(action: ActionType): Observable<ActionType> {
         return of(action);
@@ -140,35 +123,37 @@ class TestReactor extends Reactor<ActionType,State> {
 
 
 
-export class View extends React.Component<{},State> {
+export class View extends React.PureComponent<{},State> {
 
-    private reactor! : TestReactor;
-    private viewAction : Subject<ActionType> = new Subject<ActionType>();
-
+    //lazy & defer
+    viewAction? : Subject<ActionType>;
+    reactor?: TestReactor;
     constructor(props: {}){
         super(props);
         this.state = {
             value : 0
         }
-
-
-
-        this.reactor = new TestReactor(this.state);
-        this.viewAction.subscribe(this.reactor.action);
-
-        this.reactor.state.pipe(
-            map( state => state.value )
-        ).subscribe(
-            value=>this.setState({ value })
-        )
     }
 
-    render(){
+    componentDidMount(){
+        this.viewAction = new Subject<ActionType>();
+        this.reactor = new TestReactor(this.state);
+    }
 
-        //subject
-        // subject maker.
-        //여기서 어떤 버튼 클릭하면 subject로 연결되게합니다.
-        //클릭하게되면 합니다..
+    bind(){
+        this.viewAction?.subscribe(this.reactor?.action)
+        this.reactor?.state.pipe( 
+            distinctUntilChanged(),
+            map( state => state.value))
+        .subscribe(
+            value=>{
+                this.setState({value})
+            }
+        ) 
+    }
+    
+
+    render(){
 
         return(
             <>
@@ -178,10 +163,10 @@ export class View extends React.Component<{},State> {
                 <div>
                     {this.state.value}
                 </div>
-                <button onClick={()=>{this.viewAction.next({type:"INCREASE"})}}>
+                <button onClick={()=>{this.viewAction?.next({type:"INCREASE"})}}>
                     +
                 </button>
-                <button onClick={()=>{this.viewAction.next({type:"DECREASE"})}}>
+                <button onClick={()=>{this.viewAction?.next({type:"DECREASE"})}}>
                     -
                 </button>
 
@@ -191,36 +176,4 @@ export class View extends React.Component<{},State> {
     }
 }
 
-setHiddenProp(View.prototype, "props")
 
-export function setHiddenProp(target: object, prop: string ): void {
-
-    console.log(target)
-    console.log(prop)
-    console.log(Object.hasOwnProperty.call(target, prop))
-    // if (!Object.hasOwnProperty.call(target, prop)) {
-    // }
-
-
-    // if (!Object.hasOwnProperty.call(target, prop)) {
-    //     Object.defineProperty(target, prop, {
-    //         enumerable: false,
-    //         configurable: true,
-    //         writable: true,
-    //         value
-    //     })
-    // } else {
-    //     target[prop] = value
-    // }
-
-    // if (!Object.hasOwnProperty.call(target, prop)) {
-    //     Object.defineProperty(target, prop, {
-    //         enumerable: false,
-    //         configurable: true,
-    //         writable: true,
-    //         value
-    //     })
-    // } else {
-    //     target[prop] = value
-    // }
-}
