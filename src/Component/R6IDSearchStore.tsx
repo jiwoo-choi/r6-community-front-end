@@ -1,15 +1,23 @@
-import { observable, computed, action, values, entries, toJS} from "mobx";
-import { toStream, fromStream } from "mobx-utils";
-
-import * as Rx from 'rxjs'
-import { GENERALAPI, BasicErrorFormat, SearchResultCategoryType, RANKAPI, RANKBYREGION, SearchResultType } from "../Util/Entity";
+import { observable, computed, action, toJS} from "mobx";
+import { RANKBYREGION, RANKAPI } from "../Util/Entity";
 import { R6StatAPI } from "../Util/R6StatAPI";
-import { flatMap, finalize, catchError, map, retry, switchMap } from "rxjs/operators";
-import { of } from "rxjs";
+import { SearchResultProps } from "semantic-ui-react";
+
+export interface SearchResultFormat extends SearchResultProps {
+    /// 키
+    title : string;
+    /// rankTitle : 
+    rankstring : string;
+    /// platform : 
+    platform : string;
+    /// mmr : 
+    mmr: string;
+    rankdata: RANKAPI
+}
 
 export default class R6IDSearchStore {
-    
-    @observable results : (RANKBYREGION[]|BasicErrorFormat)[]= []
+
+    @observable results : (RANKBYREGION[])[]= []
     @observable searchText = ""
     @observable searchLoading = false;
 
@@ -17,18 +25,25 @@ export default class R6IDSearchStore {
     
     @computed get resultParsed() {
 
-        let lists = ["PC","플레이스테이션","엑스박스"];
+        let lists = ["PC","PS4","XBOX"];
         return toJS(this.results).reduce((prev, curr, index) => {
-            if ((curr as BasicErrorFormat).status) {
-                return prev;
-            } else {
-                const rankapi = (curr as RANKBYREGION[])[0] 
-                const data = {"title" : "SEARCH_"+index.toString() , "description": lists[index], "rankstring" : rankapi.rankStat.rankString, "rankdata": rankapi.rankStat}
+            if (curr.length > 0) {
+                const rankapi = curr[0].rankStat; 
+                const data : SearchResultFormat = { 
+                    title : "RESULT_" + index.toString(),
+                    platform : lists[index],
+                    rankstring : rankapi.rankString,
+                    mmr: rankapi.mmr.toString(),
+                    rankdata: rankapi,
+                }
                 prev.push(data)
                 return prev;
+            } else {
+                return prev;
             }
-        }, [] as any[])
+        }, [] as SearchResultFormat[])
     }
+
 
     @action changeSearchText(text: string | undefined) {
         if (text) {
@@ -43,20 +58,12 @@ export default class R6IDSearchStore {
 
         this.searchLoading = true;
         this.API.getGeneralAPI(id)
-        .pipe(
-            retry(1),
-            switchMap( (value) => {
-                if(value) {
-                    return of(value)
-                } else {
-                    return of([])
-                }
-            })
-        )
         .subscribe( res =>  {
             this.results = res
             this.searchLoading = false;
         })
+        
+
     }
 
 }

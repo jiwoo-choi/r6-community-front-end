@@ -53,10 +53,6 @@ export default class R6CommunityEditor extends React.Component<Props & StoreAcce
 
     private editorRef  = React.createRef<Editor>();
 
-    componentDidMount() {   
-        // axios.get("http://r6-search.me/api/v1/generalpvp/uplay/yabal").then( value => console.log(value))
-        // .catch( err => console.log(err))
-    }
     private getInstanceofEditor() {
         return this.editorRef.current?.getInstance()
     }
@@ -118,6 +114,7 @@ export default class R6CommunityEditor extends React.Component<Props & StoreAcce
         this.getInstanceofEditor()?.setHtml(newone
         , true)
     }
+
     onSubmit(){
         // this.props.onSubmit()
     }
@@ -128,6 +125,7 @@ export default class R6CommunityEditor extends React.Component<Props & StoreAcce
             <CONTAINER>       
             <FLUIDDIV>
                 <Input
+                    size={'large'}
                     style={{width:'100%'}}
                     placeholder={"제목을 입력해주세요"}
                 />

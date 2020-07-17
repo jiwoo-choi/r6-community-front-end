@@ -14,18 +14,6 @@ const PlatformTypeData = stringLiterals("uplay","psn","xbl");
 export type PlatformType= ElementType<typeof RegionTypeData>;
 
 
-export interface SearchResultType {
-    title: string,
-    description: string,
-    key:string,
-}
-
-export interface SearchResultCategoryType {
-    [key:string] : {
-        name: string
-        results: SearchResultType[]
-    }
-}
 
 export type DataType = "generalpvp"
 

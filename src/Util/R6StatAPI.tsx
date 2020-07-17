@@ -5,6 +5,7 @@ import axios, { AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
 import { forkJoin, zip, concat, Observable, of } from 'rxjs';
 import { retry, map, catchError, concatAll, switchMap } from 'rxjs/operators';
 import { pipeFromArray } from 'rxjs/internal/util/pipe';
+import { catchErrorJustReturn } from '../Library/RxJsExtension';
 
 export class R6StatAPI extends API {
 
@@ -47,30 +48,16 @@ export class R6StatAPI extends API {
         // })
 
         const requests = ["uplay","psn","xbl"].map( (value) => {
-
             let url = "http://r6-search.me/api/v1/rank/" + value + "/" + id
             return this.get<RANKBYREGION[]>(url)
             .pipe(
                 map(this.success),
-                switchMap( (value) => {
-                    if (value) {
-                        return of(value)
-                    } else{
-                        return of([])
-                    }
-                }),
-                catchError( err=> { 
-                    if (err.response) {
-                        return of(err.response.data as BasicErrorFormat)
-                    } else {
-                        return of({ message : "error", status : 0} as BasicErrorFormat)
-                    }                
-                }
-                )
-            )
+                catchErrorJustReturn([] as RANKBYREGION[]),
+            )   
         })
-
+        
         return forkJoin(requests)
+        
     }
 }
 
