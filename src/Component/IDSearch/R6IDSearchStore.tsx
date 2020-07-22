@@ -1,6 +1,6 @@
 import { observable, computed, action, toJS} from "mobx";
-import { RANKBYREGION, RANKAPI } from "../Util/Entity";
-import { R6StatAPI } from "../Util/R6StatAPI";
+import { RANKBYREGION, RANKAPI } from "../../Util/Entity";
+import { R6StatAPI } from "../../Library/R6StatAPI";
 import { SearchResultProps } from "semantic-ui-react";
 
 export interface SearchResultFormat extends SearchResultProps {

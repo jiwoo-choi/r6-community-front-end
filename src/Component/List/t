@@ -1,0 +1,16 @@
+ A {
+        props: {},
+        context: {},
+        refs: {},
+        updater: {
+          isMounted: [Function: isMounted],
+          enqueueSetState: [Function: enqueueSetState],
+          enqueueReplaceState: [Function: enqueueReplaceState],
+          enqueueForceUpdate: [Function: enqueueForceUpdate]
+        },
+        _childRef: R6Table {
+          props: {},
+          context: {},
+          refs: {},
+      }
+

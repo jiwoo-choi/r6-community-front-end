@@ -23,6 +23,41 @@ export interface RANKBYREGION {
     rankStat: RANKAPI;
 }
 
+export interface ContentType {
+     postId:number;
+     author:string;
+     title:string;
+     content:string;
+     viewCnt:number;
+     recommendCnt:number;
+     commentList:CommentType[];
+     createdTime:string;
+     recommend:boolean;
+}
+
+ export interface CommentType {
+     commentId:number;
+     username:string;
+     content:string;
+     childComment:CommentType[];
+     createdTime:string;
+}
+
+
+    
+    
+export interface ListType {
+     postId:number;
+     recommendCnt:number;
+     viewCnt:number;
+     createdTime:string;
+     title:string;
+     author:string;
+     hasImg:boolean;
+     notice:boolean;
+}
+
+
 export type errorMessageCode = 400 | 401 | 404 | 0 
 export interface BasicErrorFormat {
     status: errorMessageCode;

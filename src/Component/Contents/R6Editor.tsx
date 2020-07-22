@@ -6,12 +6,12 @@ import 'codemirror/lib/codemirror.css';
 import '@toast-ui/editor/dist/toastui-editor.css';
 import styled from 'styled-components'
 
-import R6IDSearch from './R6IDSearch'
+import R6IDSearch from '../IDSearch/R6IDSearch'
 import { observer } from "mobx-react"
 import axios from 'axios';
-import R6IDSearchStore from './R6IDSearchStore';
-import { StoreAcceptable } from '../Util/Types';
-import { RANKAPI } from '../Util/Entity';
+import R6IDSearchStore from '../IDSearch/R6IDSearchStore';
+import { StoreAcceptable } from '../../Util/Types';
+import { RANKAPI } from '../../Util/Entity';
 
 //action이 잘 들어가는지 (so)
 //mutate가 잘되는지

@@ -1,13 +1,42 @@
 
-import { GENERALAPI, BasicErrorFormat, RANKAPI, RANKBYREGION } from './Entity';
-import { API } from '../Library/API';
+import { GENERALAPI, BasicErrorFormat, RANKAPI, RANKBYREGION } from '../Util/Entity';
+import { API } from './API';
 import axios, { AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
 import { forkJoin, zip, concat, Observable, of } from 'rxjs';
 import { retry, map, catchError, concatAll, switchMap } from 'rxjs/operators';
 import { pipeFromArray } from 'rxjs/internal/util/pipe';
-import { catchErrorJustReturn } from '../Library/RxJsExtension';
+import { catchErrorJustReturn, catchErrorReturnEmpty } from './RxJsExtension';
+
+
+
+
 
 export class R6StatAPI extends API {
+
+
+    static instance : R6StatAPI | null = null;
+
+    static createInstance() {
+        var object = new R6StatAPI();
+        return object;
+    }
+
+    static get shared() {
+        if (!R6StatAPI.instance) {
+            R6StatAPI.instance = R6StatAPI.createInstance();
+        }
+        return R6StatAPI.instance;
+    }
+
+    static set abc(value: number) {
+        this.abc = this.abc + 1;
+    }
+
+    static get abc(){
+        return this.abc;
+    }
+
+    abc : number = 0;
 
     public constructor (config?: AxiosRequestConfig) {
         super(config);
@@ -52,7 +81,8 @@ export class R6StatAPI extends API {
             return this.get<RANKBYREGION[]>(url)
             .pipe(
                 map(this.success),
-                catchErrorJustReturn([] as RANKBYREGION[]),
+                // catchErrorReturnEmpty(),
+                catchErrorJustReturn([] as RANKBYREGION[])
             )   
         })
         

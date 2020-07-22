@@ -1,13 +1,13 @@
 import R6IDSearchStore from "./R6IDSearchStore";
 import moxios from 'moxios'
-import {API} from '../Library/API'
+import {API} from '../../Library/API'
 import { stringify } from "querystring";
-import {RANKBYREGION} from '../Util/Entity'
+import {RANKBYREGION} from '../../Util/Entity'
 import { when } from "mobx";
 import { doesNotReject } from "assert";
-import { R6StatAPI } from "../Util/R6StatAPI";
+import { R6StatAPI } from "../../Library/R6StatAPI";
 import { map } from "rxjs/operators";
-import { catchErrorJustReturn } from "../Library/RxJsExtension";
+import { catchErrorJustReturn } from "../../Library/RxJsExtension";
 import { forkJoin } from "rxjs";
 
 describe('R6IDSearchStore Test', () => {

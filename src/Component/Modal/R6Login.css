@@ -1,0 +1,138 @@
+.black-layer {
+    position: fixed;
+    top:0;
+    left:0;
+    background-color:#2c3035;
+    opacity: 0.7;
+    width: 100%;
+    height:100%;
+    z-index:50;
+}
+
+
+.login-content-layer {
+    position:fixed;
+    top:50%;
+    left:50%;
+    z-index:50;
+    height: 432px;
+    width: 100%;
+    max-width:700px;
+    background: black;
+    transform: translate3d(-50%,-50%,0);
+    overflow:hidden;
+    background:#2c3035;
+    border-radius: 10px;
+    box-shadow: 1px 3px 21px -1px rgba(0,0,0,0.69);
+}
+
+ 
+.login-content-layer.relative {
+    position: absolute;
+    display:flex;
+    flex-direction: row;
+    width:100%;
+    height:100%;
+    background:#2c3035;
+}
+
+.padder {
+    padding: 0 25px;
+}
+
+.login-content-layer .left {
+    flex:1;
+    display:block;
+}
+
+.login-content-layer .right {
+    flex:0.71;
+    display: block;;
+    overflow:hidden;
+}
+
+.login-content-layer .right img {
+    position:relative;
+    height:100%;
+    left:-50%;
+}
+
+
+.margin-bottom-10 {
+  margin-bottom:10px;
+}
+
+
+.margin-bottom-5 {
+    margin-bottom:5px;
+}
+  
+.margin-bottom-20 {
+    margin-bottom:20px;
+}
+  
+  
+
+.login-font {
+    font-family: Lato,'Helvetica Neue',Arial,Helvetica,sans-serif;
+}
+
+.login-text-center {
+    text-align: center;
+}
+
+.header {
+    padding:50px 0 30px;
+    font-weight:700;
+    color:#e5e6e7;
+    font-size:2.3rem;
+}
+
+.sub-header{
+    font-weight:700;
+    color:#b6b7b8;
+    font-size:1.4rem;
+}
+
+.form-container {
+    color:white;
+}
+
+.description {
+    color:#646568;
+    font-size:0.8rem;
+}
+
+
+
+@media ( max-width: 600px )  {
+
+    .login-content-layer {
+        height:90%;
+    }
+
+    .login-content-layer.relative {
+        display:flex;
+        flex-direction: column;
+    }
+
+    .login-content-layer .left {
+        flex:1;
+    }
+    
+    .login-content-layer .right {
+        background:pink;
+        display:none;
+    }
+    
+
+}
+/* 
+.login-content-layer.left {
+    background:red;
+    flex:0.5;
+} */
+/* .login-content-layer.right {
+    background:blue;
+    flex:0.1;
+} */

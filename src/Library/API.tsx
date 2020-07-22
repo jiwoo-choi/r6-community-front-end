@@ -5,12 +5,15 @@ import { take, tap } from "rxjs/operators";
 
 
 
+
 export class API {
 
     [x:string]: any;
 
     api!: AxiosInstance
 
+
+    
     public constructor (config?: AxiosRequestConfig, baseUrl : string = "http://r6-search.me/api/v1") {
 
         this.api = axios.create(config);
@@ -39,7 +42,7 @@ export class API {
         return this.api.getUri(config);
     }
 
-
+    
     public get<T, R = AxiosResponse<T>>(url: string, config?: AxiosRequestConfig) : Observable<R> {
         return new Observable<R>( (observer) => {
             this.api.get<T,R>(url, config)
