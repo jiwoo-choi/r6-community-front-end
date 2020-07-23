@@ -3,7 +3,6 @@ import { ComponentClass } from "react";
 import { DisposeBag } from "./DisposeBag";
 import React from "react";
 import { GlobalReactor } from "./GlobalStore";
-import { Subject } from "rxjs";
 
 
 export interface reactorTesterKit {
@@ -39,7 +38,7 @@ P = {},
 
         private _childRef: any ;
         disposeBag?: DisposeBag;
-        private _reactor?: R;
+        private _reactor?: R | null;
 
         get childProps(){
             let a = this.childRef as React.Component<P,State>;
@@ -78,12 +77,9 @@ P = {},
         }
 
         componentWillMount(){
-            console.log("parent will mount")
         }
 
         componentDidMount(){
-            console.log("parent didmount mount")
-
             let view = this.childRef as ReactorView<R> 
             this._reactor = view.reactor;
             if (this._reactor) {
@@ -98,10 +94,10 @@ P = {},
                 this.disposeBag.unsubscribe();
             }
             this._reactor?.disposeAll();
+            this._reactor = null;
         }
 
         render(){
-            console.log("parent redner")
             return( <Component {...this.props} ref={ref => this.childRef = ref}></Component>)
         }
     }

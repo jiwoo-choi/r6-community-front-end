@@ -3,13 +3,13 @@ import React from 'react';
 import { Subject, from } from 'rxjs'
 
 
-import { StoreAcceptable } from '../../Util/Types';
+import { StoreAcceptable } from '../../../Util/Types';
 import R6IDSearchStore, { SearchResultFormat } from './R6IDSearchStore';
 import { observer } from 'mobx-react';
 import { observable } from 'mobx';
 import { toStream } from 'mobx-utils';
 import { distinctUntilChanged, throttleTime, debounceTime } from 'rxjs/operators';
-import { GENERALAPI, RANKAPI } from '../../Util/Entity';
+import { GENERALAPI, RANKAPI } from '../../../Util/Entity';
 
 interface Props extends SearchProps {
   dataClicked: (data: RANKAPI, platform: string, id : string) => void;

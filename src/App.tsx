@@ -1,19 +1,14 @@
 import React, { useState } from 'react';
 import './App.css';
-import R6IDSearchStore from './Component/IDSearch/R6IDSearchStore';
-import {R6Navigation} from './Component';
-import { Button, Header } from 'semantic-ui-react';
 import styled from 'styled-components'
-import GlobalNavigation from './Component/Navigation/R6GlobalNavigation'
-import CommunityNavigation from './Component/Navigation/R6CommunityNavigation';
-import R6Table from './Component/List/R6Table';
-import { Pagination } from 'semantic-ui-react'
-import R6Login from './Component/Modal/R6Login';
-import { ModalReactor } from './Component/Modal/ModalReactor';
-import { Reactor } from './ReactorKit/Reactor';
-import {GlobalReactor, register } from './ReactorKit/GlobalStore';
+import { ModalReactor } from './Component/Login/ModalReactor';
+import { register } from './ReactorKit/GlobalStore';
 // import { ModalReactor } from './Component/Modal/ModalReactor';
-import { ContentReactor } from './Component/Contents/ContentReactor';
+import { 
+  R6Forum, 
+  R6Navigation, 
+  R6Footer
+} from './Component';
 
 const PADDING = styled.div`
   max-width: 1200px;
@@ -58,6 +53,7 @@ const CONTAINER = styled.div`
 `
 
 
+
 //  // padding: 0 1rem;
 // 항상 살아있어야하는 store입니다.
 // 앱이 꺼지기 전까지는요. 글로벌 스토어
@@ -65,16 +61,17 @@ const CONTAINER = styled.div`
 const value = register([new ModalReactor({isOpened: false},false,true)])
 
 function App() {
-
-  // const EditorStore = new R6EditorStore();
-  // 사용하는 모든 Prop를 받도록한다.
-  // console.log(Object.getOwnPropertyDescriptors(new R6Table({}x))
 //    <GlobalReactor value={value}>
+ 
 
   return(
+
       <div className="App">
-        <GlobalReactor.Provider value={value}>
-        <R6Table></R6Table>
+        <R6Navigation></R6Navigation>
+        <R6Forum></R6Forum>
+        <R6Footer></R6Footer>
+        {/* <GlobalReactor.Provider value={value}> */}
+        {/* <R6Table></R6Table> */}
         {/* <R6Editor store={store}></R6Editor> */}
         {/* <R6Comment comments={commentMockup}></R6Comment> */}
         {/* <R6List></R6List> */}
@@ -102,10 +99,11 @@ function App() {
         totalPages={10}
       /> */}
       {/* <R6Login></R6Login> */}
-      </GlobalReactor.Provider>
+      {/* </GlobalReactor.Provider> */}
       </div>
     );
 
 }
+
 
 export default App;

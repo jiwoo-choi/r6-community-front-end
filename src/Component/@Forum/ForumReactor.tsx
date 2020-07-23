@@ -1,12 +1,9 @@
 import { Reactor } from "../../ReactorKit/Reactor";
-import { Observable , concat, of, fromEvent } from "rxjs";
-import { takeUntil, map, subscribeOn, filter, tap } from "rxjs/operators";
-import { API } from "../../Library/API";
+import { Observable , concat, of  } from "rxjs";
+import { takeUntil, map,  filter } from "rxjs/operators";
 import { R6StatAPI } from "../../Library/R6StatAPI";
-import { createRef } from "react";
 import { ListType, ContentType } from "../../Util/Entity";
 import { flatAxiosResultAndCast, catchErrorJustReturn, distinctUntilActionChanged } from "../../Library/RxJsExtension";
-import { ListIteratorTypeGuard } from "lodash";
 
 // export type MenuType = "공략/팁" | "클랜홍보" | "같이하기" | "자유게시판"
 
@@ -41,7 +38,7 @@ export function TopicToString( topicType: Topic) {
     }
 }
 
-type Topic = "tips"|"free"| "together"| "clan"
+export type Topic = "tips"|"free"| "together"| "clan"
 type Mode = "list" | "edit" | "view"
 
 export const CLICKTOPIC = "CLICKTOPIC" as const

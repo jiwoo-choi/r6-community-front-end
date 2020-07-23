@@ -2,7 +2,61 @@ import { Observable ,Subject, Scheduler, empty, queueScheduler, Subscription } f
 import { flatMap, startWith, scan, catchError, shareReplay, tap,  observeOn, takeUntil, switchMap} from 'rxjs/operators'
 import { Stub } from './Stub';
 import { DisposeBag } from './DisposeBag';
+import { ReactorHook } from './ReactorHook';
 
+
+
+
+// class TestReactor {
+
+//     private static updater = 1;
+//     private static setState:any;
+  
+//     static use(initialState: any) {
+//       TestReactor.setState = useState(1)[1];
+//       const [state, setState] = useState<any>(undefined);
+//       if (!state) setState(new this(initialState));
+//       const currentState = (!state) ? initialState : state.currentState
+//       return [state, currentState]
+//     }
+  
+//     currentState: any;
+//     constructor(initialState: any){
+//       this.currentState = initialState;
+//       console.log("called");
+//     }
+  
+//     static flush(){
+//       TestReactor.setState(TestReactor.updater *= -1);
+//     }
+//   }
+  
+//   class TestReactorChild extends TestReactor {
+  
+//       add(){
+//         this.currentState = this.currentState + 1;
+//         TestReactorChild.flush();
+//       }
+//   }
+  
+//   function Test1() {
+//     console.log("updated!")
+//     const [reactor, currentState] = TestReactorChild.use(1);
+//     console.log(reactor, currentState)
+//     // reactor.add()
+//     return (
+//       <>
+//       <div> TEST 1 - {currentState} </div>
+//       <button onClick={()=>{reactor.add()}}>addbutton</button>
+//       </>
+//     )
+//   }
+
+  
+
+/**
+ * Hook 지원형 버전.
+ */
 export abstract class Reactor<Action = {}, State = {}, Mutation = Action> {
 
     private _isGlobal: boolean;
@@ -71,9 +125,11 @@ export abstract class Reactor<Action = {}, State = {}, Mutation = Action> {
     protected transformAction(action: Observable<Action>): Observable<Action> {
         return action;
     }
+
     protected transformMutation(mutation: Observable<Mutation>): Observable<Mutation> {
         return mutation;
     }
+
     protected transformState(state: Observable<State>): Observable<State> {
         return state;
     }

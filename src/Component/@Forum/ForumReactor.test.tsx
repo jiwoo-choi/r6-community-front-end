@@ -3,14 +3,9 @@ import moxios from "moxios";
 import { listResultMockup, postResultMockup } from "../../Data/mockup";
 import { R6StatAPI } from "../../Library/R6StatAPI";
 import { from } from "rxjs";
-import { TestScheduler } from 'rxjs/testing';
-import { delay } from "rxjs/operators";
-import { mount } from "enzyme";
-import R6Table1 from "./R6Table";
-import {R6Table} from "./R6Table";
+import { shallow } from "enzyme";
 
 import React from 'react';
-import { ReactorView } from "../../ReactorKit/ReactiveView";
 
 
 
@@ -238,43 +233,37 @@ describe( "Forum Reactor Test / Reactor Action -> Mutate -> State Test", () => {
     })
 
 
-    it('8. side effect : click post -> mode change -> loading -> (failure) -> loading -> isError -> go back false test', done => {
+    // it('9. View Check', done => {
 
+    //     reactor = new ForumReactor(initialState, true);
+    //     // enzyme을 통해 마운트시키기
+    //     const wrapper = shallow(<R6Table></R6Table>); 
 
-        reactor = new ForumReactor(initialState, true);
-        const wrapper = mount(<R6Table></R6Table>); 
-        expect((wrapper.instance() as any).reactor).not.toBe(undefined);
+    //     // 1. 리액터가 이미 존재하는지 체크.
+    //     expect((wrapper.instance() as any).reactor).not.toBe(undefined);
 
-        // 테스트에서 사용할 리액터를 주입.
-        (wrapper.instance() as any).reactor = reactor;
+    //     // 2. 테스트에서 사용할 리액터를 주입.
+    //     (wrapper.instance() as any).reactor = reactor;
 
-        // bind()를 수동으로 다시 불러 업데이트 시키기.
-        (wrapper.instance() as any).bind(reactor);
+    //     // 3. bind()를 수동으로 다시 불러 리액터 업데이트 시키기.
+    //     (wrapper.instance() as any).bind(reactor);
 
-        // enzyme을 활용하여 액션을 발생.
-        wrapper.find('button').at(0).simulate('click')
+    //     // 4. enzyme을 통해 button을 시뮬레이트한다.
+    //     wrapper.find('button').at(0).simulate('click')
 
-        //stub의 lastAction이 예상한 액션과 맞는지 체크.
-        expect(reactor.stub.lastAction.type).toBe("CLICKBACK");
+    //     // 5. stub은 모든 액션 기록을 저장한다. 액션을 비교한다.
+    //     expect(reactor.stub.lastAction.type).toBe("CLICKBACK");
 
-        reactor.stub.state.next({...initialState, mode : "edit"});
-        expect((wrapper.state() as ForumState).mode).toBe("edit");
+    //     // 6. stub은 또한 state에서 액션을 내보낼 수 있다.
+    //     reactor.stub.state.next({...initialState, mode : "edit"});
 
-        done();
+    //     // 7. 액션을 내보낸 뒤, state가 제대로 변경되었는지 체크한다.
+    //     expect((wrapper.state() as ForumState).mode).toBe("edit");
 
-        // console.log(reactor.stub)
-        // // stub안에 쌓인 액션 로그를 확인.
-        // expect(reactor.stub.lastAction.type).toBe("CLICKPAGE");
-
-        // // stub의 state는 뷰로 액션을 보낼 수 있음.
-        // reactor.stub.state.next({...initialState, mode : "edit"});
-
-        // // ReactiveView의 childRef속성을 이용하여 Wrapper안에 있는 state.
-        // expect((wrapper.instance() as any).childState.mode.toBe("edit"));
-    })
-    // it('9. binding ', done => {
+    //     done();
 
     // })
+
 
 })
 
