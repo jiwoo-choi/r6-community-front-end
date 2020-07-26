@@ -10,6 +10,8 @@ abstract class Reactor<Action, State = {}, Mutation = Action> {
     currentState! : State
     state!: Observable<State>
 
+    public readonly REACTORID$ = "REACTORKIT_REACTOR" 
+
     protected scheduler : Scheduler = asyncScheduler;
 
     constructor(initialState : State){

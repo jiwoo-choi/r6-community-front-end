@@ -1,17 +1,20 @@
 import { Editor } from '@toast-ui/react-editor'
-import React from 'react'
+import React, { Component } from 'react'
 import { Button } from 'semantic-ui-react'
 import { Input } from 'semantic-ui-react'
 import 'codemirror/lib/codemirror.css';
 import '@toast-ui/editor/dist/toastui-editor.css';
 import styled from 'styled-components'
 
-import R6IDSearch from './IDSearch/R6IDSearch'
-import { observer } from "mobx-react"
-import axios from 'axios';
-import R6IDSearchStore from './IDSearch/R6IDSearchStore';
-import { StoreAcceptable } from '../../Util/Types';
-import { RANKAPI } from '../../Util/Entity';
+// import R6IDSearch from './IDSearch/R6IDSearch'
+import { RANKAPI, RANKBYREGION } from '../../../../Util/Entity';
+import { ReactorGroupProps } from '../../../../ReactorKit/ReactorGroup';
+import R6EditorReactor, { EditorinitialState } from './R6EditorReactor';
+import { map } from 'rxjs/operators';
+import { deepDistinctUntilChanged } from '../../../../Library/RxJsExtension';
+import ForumReactor from '../../../@Forum/ForumReactor';
+import R6IDSearch from './R6IDSearch/R6IDSearch';
+import ReactiveView from '../../../../ReactorKit/ReactiveView';
 
 //action이 잘 들어가는지 (so)
 //mutate가 잘되는지
@@ -48,11 +51,27 @@ interface Props {
     onCancel?: () => void;
 }
 
-@observer
-export default class R6CommunityEditor extends React.Component<Props & StoreAcceptable<R6IDSearchStore>>{
+class R6Editor extends React.Component<Props & ReactorGroupProps<ForumReactor>>{
 
     private editorRef  = React.createRef<Editor>();
+    reactor? : R6EditorReactor;
 
+    componentWillMount(){
+        this.reactor = new R6EditorReactor(EditorinitialState)
+    }
+
+    componentDidMount(){
+        //this.current
+        // this.props.reactor?.state.pipe(
+        //     map( value => value.data),
+        //     // deepDistinctUntilChanged(),
+        // ).subscribe(
+        //     res=> console.log(res)
+        //     // res => this.insertTable(data, )
+        // )
+    }
+
+    
     private getInstanceofEditor() {
         return this.editorRef.current?.getInstance()
     }
@@ -120,40 +139,48 @@ export default class R6CommunityEditor extends React.Component<Props & StoreAcce
     }
 
     render(){
-        return(
-         
-            <CONTAINER>       
-            <FLUIDDIV>
-                <Input
-                    size={'large'}
-                    style={{width:'100%'}}
-                    placeholder={"제목을 입력해주세요"}
-                />
-            </FLUIDDIV>
+        if (!this.props.reactor) {
+            return null
+        } else {
+            const parentReactor = this.props.reactor;
+            const localReactor = this.reactor;
+            const { topic } = parentReactor.currentState
+            return(
 
-            <FLUIDDIV>
-                <R6IDSearch 
-                    dataClicked={(data: RANKAPI, platform: string, id: string) => { this.insertTable(data, platform, id)}}
-                    store={this.props.store}
-                    input={{ fluid:true , size:"large"}} 
-                />
-            </FLUIDDIV>
-            
-            <FLUIDDIV>
-                <Editor 
-                    height={"600px"}
-                    initialEditType={"wysiwyg"}
-                    ref={this.editorRef}
-                />
-            </FLUIDDIV>
+                <CONTAINER>       
+                <FLUIDDIV>
+                    <Input
+                        size={'large'}
+                        style={{width:'100%'}}
+                        placeholder={"제목을 입력해주세요"}
+                    />
+                </FLUIDDIV>
+    
+                <FLUIDDIV>
+                { topic === "together" && 
+                    <R6IDSearch reactor={localReactor}></R6IDSearch>
+                }
+                </FLUIDDIV>
 
-            <FLUIDDIV>
-                <BUTTONGROUP>
-                    <Button size={"big"} > 취소하기 </Button>
-                    <Button size={"big"} positive> 등록하기 </Button>
-                </BUTTONGROUP>
-            </FLUIDDIV>
-        </CONTAINER>
-        )
+                <FLUIDDIV>
+                    <Editor 
+                        height={"600px"}
+                        initialEditType={"wysiwyg"}
+                        ref={this.editorRef}
+                    />
+                </FLUIDDIV>
+    
+                <FLUIDDIV>
+                    <BUTTONGROUP>
+                        <Button size={"big"} onClick={()=>{parentReactor.dispatch({type:"CLICKBACK"})}}> 취소하기 </Button>
+                        <Button size={"big"} positive> 등록하기 </Button>
+                    </BUTTONGROUP>
+                </FLUIDDIV>
+            </CONTAINER>
+            )
+        }
+       
     }
 }
+
+export default ReactiveView(R6Editor)

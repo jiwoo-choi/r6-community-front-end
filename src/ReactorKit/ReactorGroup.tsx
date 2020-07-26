@@ -11,22 +11,26 @@ function map(children : React.ReactNode, func: (child : React.ReactElement, inde
 }
 
 
-export interface ReactorGroupProps {
-    initialState?: any,
-    reactor?: any
+export interface ReactorGroupProps<T = any> {
+    reactor?: T
 }
 
-export default class ReactorGroup<T,S> extends React.PureComponent<ReactorGroupProps>{
+//router?
+//ReactRouter
+//ReactorRouter
+//https://www.bsidesoft.com/830
+export default class ReactorGroup extends React.PureComponent<ReactorGroupProps>{
     
     render(){
-
         return(
             <>
                 {
                     map( this.props.children, (child, index, total) => {
+                        // console.log(child.type)
                         return React.cloneElement( child , {
+                            ...child.props,
                             reactor:this.props.reactor,
-                            initialState: this.props.initialState
+                            // initialState: this.props.initialState
                         })
                     })
                 }

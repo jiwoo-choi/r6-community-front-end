@@ -208,7 +208,6 @@ describe( "Forum Reactor Test / Reactor Action -> Mutate -> State Test", () => {
         let state_change = 0;
         from(reactor.state).subscribe(
             state => {
-                console.log(state_change)
 
                 if(state_change === 1) {
                     expect(state.mode).toBe("view");

@@ -1,11 +1,12 @@
 
-import { GENERALAPI, BasicErrorFormat, RANKAPI, RANKBYREGION } from '../Util/Entity';
+import { RANKBYREGION } from '../Util/Entity';
 import { API } from './API';
-import axios, { AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
-import { forkJoin, zip, concat, Observable, of } from 'rxjs';
-import { retry, map, catchError, concatAll, switchMap } from 'rxjs/operators';
-import { pipeFromArray } from 'rxjs/internal/util/pipe';
-import { catchErrorJustReturn, catchErrorReturnEmpty } from './RxJsExtension';
+import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
+import { forkJoin, Observable, from, Subscriber } from 'rxjs';
+import {  map, tap, delay } from 'rxjs/operators';
+import { catchErrorJustReturn, flatAxiosResultAndCast } from './RxJsExtension';
+import moxios from 'moxios';
+import { listResultMockup, rankbyregionMockup } from '../Data/mockup';
 
 
 
@@ -40,8 +41,15 @@ export class R6StatAPI extends API {
 
     public constructor (config?: AxiosRequestConfig) {
         super(config);
-        
-        // // this middleware is been called right before the http request is made.
+        moxios.install(this.api);
+        moxios.stubRequest(new RegExp("([0-9]|[a-z]).*"), {
+            status: 200,
+            responseText: JSON.stringify(listResultMockup)
+            // response: {
+            //     data: listResultMockup
+            // } 
+        })
+        // this middleware is been called right before the http request is made.
         // this.interceptors.request.use((param: AxiosRequestConfig) => ({
         //     ...param,
         // }));
@@ -80,15 +88,18 @@ export class R6StatAPI extends API {
             let url = "http://r6-search.me/api/v1/rank/" + value + "/" + id
             return this.get<RANKBYREGION[]>(url)
             .pipe(
-                map(this.success),
+                // map(this.success),
+                delay(5000),
                 // catchErrorReturnEmpty(),
-                catchErrorJustReturn([] as RANKBYREGION[])
+                flatAxiosResultAndCast(),
+                catchErrorJustReturn([] as RANKBYREGION[]),
             )   
         })
         
         return forkJoin(requests)
         
     }
+
 }
 
 

@@ -143,51 +143,52 @@ const OTHERCONTENTS = styled.div`
 `
 
 
-export class R6Login extends React.Component<GlobalReactorProps<ModalReactor,ModalState>>  {
+export class R6Login extends React.Component {
 
     render(){
 
-        return (
-                <>  
-                <div className="black-layer" ref={(ref1) =>  fromEventWithEmitter(ref1!,'click')}></div>
-                <div className="login-content-layer">
-                    <div className="login-content-layer relative">
-                        <div className="left padder">
-                            <div className="header login-text-center login-font">
-                                로그인하기
-                            </div>
-                            <div className="sub-header login-text-center login-font">
-                                안녕하세요! 만나서 반갑습니다.
-                            </div>
+        return <></>
+        // return (
+        //         <>  
+        //         <div className="black-layer" ref={(ref1) =>  fromEventWithEmitter(ref1!,'click')}></div>
+        //         <div className="login-content-layer">
+        //             <div className="login-content-layer relative">
+        //                 <div className="left padder">
+        //                     <div className="header login-text-center login-font">
+        //                         로그인하기
+        //                     </div>
+        //                     <div className="sub-header login-text-center login-font">
+        //                         안녕하세요! 만나서 반갑습니다.
+        //                     </div>
 
-                            <div className="form-container">
-                                <Form.Field >
-                                    <div className="margin-bottom-5"> <strong> 아이디 </strong>  </div>
-                                    <Input className="margin-bottom-10" type="text" iconPosition='left' icon={"at"} placeholder="이메일 입력" fluid/>
-                                    <div className="margin-bottom-5"> <strong> 비밀번호 </strong> </div>
-                                    <Input className="margin-bottom-20" type='password' iconPosition='left' icon={"key"}  placeholder="비밀번호 입력" fluid />
-                                    </Form.Field>
-                            </div>
+        //                     <div className="form-container">
+        //                         <Form.Field >
+        //                             <div className="margin-bottom-5"> <strong> 아이디 </strong>  </div>
+        //                             <Input className="margin-bottom-10" type="text" iconPosition='left' icon={"at"} placeholder="이메일 입력" fluid/>
+        //                             <div className="margin-bottom-5"> <strong> 비밀번호 </strong> </div>
+        //                             <Input className="margin-bottom-20" type='password' iconPosition='left' icon={"key"}  placeholder="비밀번호 입력" fluid />
+        //                             </Form.Field>
+        //                     </div>
 
-                            <Button fluid color={"green"}>로그인하기</Button>
-                            <div className="margin-bottom-10"></div>
-                            <div className="description login-font login-text-center">
-                                로그인은 개인 정보 보호 정책 및  서비스 약관에 동의하는 것을 의미합니다.
-                            </div>
-                        </div>
-                        <div className="right">
-                            <img src="./season18-he.jpg" className="image"/>
-                        </div>
-                    </div>
-                </div>
+        //                     <Button fluid color={"green"}>로그인하기</Button>
+        //                     <div className="margin-bottom-10"></div>
+        //                     <div className="description login-font login-text-center">
+        //                         로그인은 개인 정보 보호 정책 및  서비스 약관에 동의하는 것을 의미합니다.
+        //                     </div>
+        //                 </div>
+        //                 <div className="right">
+        //                     <img src="./season18-he.jpg" className="image"/>
+        //                 </div>
+        //             </div>
+        //         </div>
             
-                </>
-            )
+        //         </>
+        //     )
         }
            
 }
 
-export default Global(ReactiveView(R6Login), ModalReactor.name)
+export default R6Login
 
 
 /**

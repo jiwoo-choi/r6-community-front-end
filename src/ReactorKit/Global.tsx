@@ -37,8 +37,6 @@ export default function Global<
             
 
             get childProps(){
-                console.log("child props called");
-                console.log(Component.displayName);
 
                 if (Component.displayName === "REACTORKIT_REACTIVE_VIEW") {
                     let a = this.childRef as any

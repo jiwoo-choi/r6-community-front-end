@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.css';
 import styled from 'styled-components'
 import { ModalReactor } from './Component/Login/ModalReactor';
@@ -51,14 +51,10 @@ const CONTAINER = styled.div`
   font-size: 1.2rem;
   color: #888;
 `
-
-
-
 //  // padding: 0 1rem;
 // 항상 살아있어야하는 store입니다.
 // 앱이 꺼지기 전까지는요. 글로벌 스토어
-
-const value = register([new ModalReactor({isOpened: false},false,true)])
+// const value = register([new ModalReactor({isOpened: false},false,true)])
 
 function App() {
 //    <GlobalReactor value={value}>

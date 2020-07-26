@@ -36,13 +36,40 @@ export const searchResultMockUp : RANKBYREGION[]  =  [
             "season": 17,
             "losses": 0,
             "createdTime": "2020-05-19T18:19:30.0502837",
-            "maxRankString": "UNRANK",
-            "rankString": "UNRANK",
+            "maxRankString": "SILVER_II",
+            "rankString": "SILVER_II",
             nextRankMmr : 100,
             nextRankString : "ABC",                
         }
     }
 ]
+
+
+
+export const rankbyregionMockup : RANKBYREGION[] =  
+    [{
+        region: "global",
+        rankStat: {
+            "maxMmr": 0,
+            "death": 0,
+            "rank": 0,
+            "maxRank": 0,
+            "kills": 0,
+            "abandons": 0,
+            "mmr": 2500,
+            "wins": 0,
+            "region": "ncsa",
+            "season": 17,
+            "losses": 0,
+            "createdTime": "2020-05-19T18:19:30.0502837",
+            "maxRankString": "SILVER_II",
+            "rankString": "SILVER_II",
+            nextRankMmr : 100,
+            nextRankString : "ABC",                
+        }
+    }]
+
+
 
 
 

@@ -11,8 +11,10 @@ export class DisposeBag {
     this.namedSubscriptions = {};
   }
 
-  set disposeOf(subscription : Subscription) {
-    this.subscriptions.add(subscription)
+  set disposeOf(subscription : Subscription | undefined) {
+    if (subscription) {
+      this.subscriptions.add(subscription)
+    }
   }
   
   public add(subscription: Subscription, name?: string): void {

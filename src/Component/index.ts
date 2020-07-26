@@ -1,8 +1,5 @@
 
   
-export {
-    default as R6IDSearch
-} from './Contents/IDSearch/R6IDSearch'
 
 export {
     default as R6Footer

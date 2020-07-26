@@ -53,10 +53,6 @@ import { ReactorHook } from './ReactorHook';
 //   }
 
   
-
-/**
- * Hook 지원형 버전.
- */
 export abstract class Reactor<Action = {}, State = {}, Mutation = Action> {
 
     private _isGlobal: boolean;
@@ -72,6 +68,9 @@ export abstract class Reactor<Action = {}, State = {}, Mutation = Action> {
     private _disposeBag : DisposeBag = new DisposeBag(); //only 
     private _isStubEnabled : boolean;
     // private actionWeakMap = new WeakMap();
+
+    public readonly REACTORID$ = "REACTORKIT_REACTOR2" 
+
 
     get initialState() {
         return this._initialState;
@@ -108,6 +107,8 @@ export abstract class Reactor<Action = {}, State = {}, Mutation = Action> {
             this._action = new Subject<Action>();
             this._state = this.createStream();
         }
+
+        // this._disptach = this._disptach.bind(this)
     }
 
     // static get reactorName(){
@@ -121,6 +122,23 @@ export abstract class Reactor<Action = {}, State = {}, Mutation = Action> {
 
     abstract mutate(action : Action): Observable<Mutation>;
     abstract reduce(state: State, mutation: Mutation): State;
+
+
+    public dispatch(action : Action) {
+        this.action.next(action)
+    }
+
+    public _dispatch(action : Action) {
+        let self = this;
+        return function a() {
+            self.action.next(action)
+        }
+    }
+
+
+    public dispatchForMuation(){
+        // self.transfor
+    }
 
     protected transformAction(action: Observable<Action>): Observable<Action> {
         return action;
@@ -148,7 +166,7 @@ export abstract class Reactor<Action = {}, State = {}, Mutation = Action> {
 
     disposeAll(){
         if (this.isGlobal) {
-            console.warn("This Reactor is not supposed to be disposed. Please check your codes again.")
+            console.warn("1 : This Reactor is not supposed to be disposed. Please check your codes again.")
         } else {
             this.disposeBag.unsubscribe();
         }
@@ -156,9 +174,9 @@ export abstract class Reactor<Action = {}, State = {}, Mutation = Action> {
     
     set disposedBy(subscription: Subscription | undefined) {
         if (subscription) {
-
+            
             if (this.isGlobal) {
-                console.warn("This Reactor is not supposed to disposed bag. Please check your codes again.")
+                console.warn("2: This Reactor is not supposed to disposed bag. Please check your codes again.")
             } else {
                 this.disposeBag.add(subscription)
             }
@@ -203,7 +221,7 @@ export abstract class Reactor<Action = {}, State = {}, Mutation = Action> {
             }),
             shareReplay(1),
         )
-        // 글로벌이 될필요가 있는가? subscribe될때마다.
+
         this.disposedBy = transformedState.subscribe();
         return transformedState;
     }

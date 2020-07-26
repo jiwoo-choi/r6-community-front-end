@@ -1,6 +1,6 @@
 import { Reactor } from "./Reactor";
 import { Observable } from "rxjs";
-import { useState } from "react";
+import { useState, useMemo, useCallback, useReducer } from "react";
 import { tap } from "rxjs/operators";
 
 
@@ -12,14 +12,20 @@ export abstract class ReactorHook<Action,State,Mutation = Action> extends Reacto
     private static flush(){
         ReactorHook.setState(ReactorHook.updator *= -1);
     } 
-
+    
     static use<Action,State,Mutation>(this: new (initialState: State, isStubEnabled : boolean, isGlobal : boolean) => ReactorHook<Action,State,Mutation>, initialState: State , isStubEnabled : boolean = false, isGlobal : boolean = false) : [ReactorHook<Action,State,Mutation>, State] {
         ReactorHook.setState = useState(1)[1];
         const [state, setState] = useState<any>(undefined);
-        if (!state) {
-            const self = new this(initialState, isStubEnabled, isGlobal);
-            setState(self)
-        }
+        // useMemo(() => new this)
+        // useCallback( 
+        // useMemo(()=> setState(new this(initialState, isStubEnabled, isGlobal)), [])
+        //useCallback, useState, useEffect
+        //[a,b,c,d]
+        // if (!state) {
+        //     const self = new this(initialState, isStubEnabled, isGlobal);
+        //     setState(self)
+        // }
+
         const currentState = (!state) ? initialState : state.currentState;
         return [state, currentState];
     }    

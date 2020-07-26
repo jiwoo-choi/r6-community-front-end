@@ -29,7 +29,6 @@ export function deepDistinctUntilChanged() {
 }
 
 
-
 export function distinctUntilActionChanged<T>( target: Observable<any>, source: any ) : MonoTypeOperatorFunction<T> {
     return takeUntil( target.pipe( filter ( res => _.isEqual(res,source))))
 }
