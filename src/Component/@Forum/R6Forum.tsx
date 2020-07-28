@@ -1,5 +1,5 @@
 import React from "react";
-import ForumReactor, { ForumState } from "./ForumReactor";
+import ForumReactor, { ForumState, ForumStateInitialState, ForumAction } from "./ForumReactor";
 import R6CommunityNavigation from "../Contents/TopicNavigation/R6CommunityNavigation";
 import ReactorGroup from "../../ReactorKit/ReactorGroup";
 import styled from "styled-components";
@@ -10,8 +10,10 @@ import R6IDSearch from "../Contents/Post/Edit/R6IDSearch/R6IDSearch";
 import R6Post from "../Contents/Post/View/R6Post";
 import R6QuickSearch from "../QuickSearch/R6QuickSearch";
 import R6PostWrite from "../Contents/Post/Edit/R6PostWrite";
-import { map } from "rxjs/operators";
+import { map, distinctUntilChanged, observeOn, tap } from "rxjs/operators";
 import { deepDistinctUntilChanged } from "../../Library/RxJsExtension";
+import { ReactorControlType } from "../../ReactorKit/Reactor";
+import { Subject, queueScheduler } from "rxjs";
 
 
 
@@ -22,49 +24,37 @@ const FROUMMARGIN = styled.div`
     padding: 0 1rem;
 `
 
-export class R6Forum extends React.Component {
+export class R6Forum extends React.Component{
     
     reactor?: ForumReactor | undefined;
+    reactorControls?: ReactorControlType<ForumAction, ForumState>;
     initialState?: ForumState
 
+
     componentWillMount(){
-        
-        this.initialState = {
-            isError: false,
-            isLoading: true,
-            page: 1,
-            mode:"list",
-            topic:"tips",
-            post: undefined,
-            list:[],
-        }
-        this.reactor = new ForumReactor(this.initialState)
+        this.reactor = new ForumReactor(ForumStateInitialState)
+        this.reactorControls = this.reactor.getReactorControl();
     }
-    
+
     componentDidMount(){
 
-        this.reactor?.action.next({type:"CLICKTOPIC", newTopic:"tips"});
-        // this.reactor?.state.pipe.
-        // R6StatAPI.shared.get("http://www.r6-search.me/topic/$topic?page=$1").subscribe( res => console.log(res))
+        this.reactor?.dispatch({type:"CLICKTOPIC", newTopic:"tips"});
 
-        // this.reactor?.state.pipe(
-        //     map()
-        // )
-
-        
         this.reactor?.state.pipe(
             map( value => value.mode ),
             deepDistinctUntilChanged(),
         ).subscribe( 
             mode=> this.setState({mode})
         )
+
     }
 
     render(){
+        //ismodal
         return(
             <React.Fragment>
                 <FROUMMARGIN>
-                    <ReactorGroup reactor={this.reactor}>
+                    <ReactorGroup {...this.reactorControls}>
                         <R6CommunityNavigation></R6CommunityNavigation>
                         {
                             this.reactor?.currentState.mode === "list" &&
@@ -78,11 +68,17 @@ export class R6Forum extends React.Component {
                             this.reactor?.currentState.mode === "edit" &&
                                 <R6PostWrite></R6PostWrite>
                         }
+                        {
+                            this.reactor?.currentState.mode === "view" &&
+                                <R6Post></R6Post>
+                        }
+
+
                         {/* <R6IDSearch></R6IDSearch> */}
                         {/* <R6QuickSearch></R6QuickSearch> */}
                         {/* <R6List></R6List> */}
                         {/* <DUMMY></DUMMY> */}
-                    </ReactorGroup>
+                        </ReactorGroup>
                 </FROUMMARGIN>
             </React.Fragment>
         )

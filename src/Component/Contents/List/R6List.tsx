@@ -1,17 +1,13 @@
 import React from "react"
 import { Placeholder, Segment } from "semantic-ui-react";
-import ForumReactor, { ForumState } from "../../@Forum/ForumReactor";
-import { map, debounceTime } from "rxjs/operators";
-import { deepDistinctUntilChanged } from "../../../Library/RxJsExtension";
+import ForumReactor, { ForumReactorProps } from "../../@Forum/ForumReactor";
 import R6Cell from "./R6Cell";
 import { ListType } from "../../../Util/Entity";
 import { DisposeBag } from "../../../ReactorKit/DisposeBag";
-import ReactiveView, { ReactorView } from "../../../ReactorKit/ReactiveView";
-import R6EditorReactor, { EditorinitialState } from "../Post/Edit/R6EditorReactor";
+import ReactiveView  from "../../../ReactorKit/withReactor";
+import withReactor from "../../../ReactorKit/withReactor";
 
-export class R6List extends React.PureComponent<{
-    reactor?: ForumReactor
-}>{
+export class R6List extends React.PureComponent<ForumReactorProps>{
 
     // constructor(props: {
     //     reactor?: ForumReactor
@@ -44,16 +40,14 @@ export class R6List extends React.PureComponent<{
         let cell = [];
         for (let i = 0 ; i < cellData.length ; i++) {
             cell.push( 
-                <R6Cell isNotice={cellData[i].notice } key={"CELL_"+i} data={cellData[i]}/>
+                <R6Cell onClick={this.props.dispatcher!({type:"CLICKPOST",postId: cellData[i].postId})} isNotice={cellData[i].notice} key={"CELL_"+i} data={cellData[i]}/>
             )
         }
         return cell
     }
-
-
     
     render(){
-        const { isLoading, list, isError, topic } = this.props.reactor?.currentState!;
+        const { isLoading, list, isError } = this.props.getState!();
 
         if ( isLoading ) {
             return (
@@ -66,7 +60,6 @@ export class R6List extends React.PureComponent<{
         } else {
             return (
                 <>
-                    <div> {topic}  출력완료 ! </div>
                     {this.getList(list)}
                 </>
             )
@@ -100,53 +93,5 @@ export class R6List extends React.PureComponent<{
 }
 //height : 125px;
 
-export default ReactiveView(R6List);
+export default withReactor(R6List);
 
-
-
-    // componentDidMount(){
-        
-    //     this.disposeBag = new DisposeBag();
-    //     this.disposeBag.disposeOf = this.props.reactor?.state.pipe(
-    //         map( res => {
-    //             return res.list
-    //         }),
-    //         deepDistinctUntilChanged(),
-    //     ).subscribe(
-    //         list => {
-    //             console.log(list);
-    //             this.setState({list})
-    //         }
-    //     )
-
-    //     this.disposeBag.disposeOf = this.props.reactor?.state.pipe(
-    //         map( res =>  res.isError ),
-    //         deepDistinctUntilChanged(),
-    //     ).subscribe(
-    //         isError => this.setState({isError})
-    //     )
-
-    //     this.disposeBag.disposeOf = this.props.reactor?.state.pipe(
-    //         map( res =>  {
-    //             // console.log("ISLOADING CALLED", res);
-    //             return res.isLoading
-    //         } ),
-    //         deepDistinctUntilChanged(),
-    //     ).subscribe(
-    //         isLoading => {
-    //             this.setState({isLoading})
-    //         }
-    //     )
-
-    //     this.disposeBag.disposeOf = this.props.reactor?.state.pipe(
-    //         map( res =>  res.topic ),
-    //         deepDistinctUntilChanged(),
-    //     ).subscribe(
-    //         topic => this.setState({topic})
-    //     )
-
-    // }
-    
-    // componentWillUnmount(){
-    //     this.disposeBag.unsubscribe();
-    // }

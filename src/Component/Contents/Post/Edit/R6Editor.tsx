@@ -1,25 +1,18 @@
 import { Editor } from '@toast-ui/react-editor'
-import React, { Component } from 'react'
+import React  from 'react'
 import { Button } from 'semantic-ui-react'
 import { Input } from 'semantic-ui-react'
 import 'codemirror/lib/codemirror.css';
 import '@toast-ui/editor/dist/toastui-editor.css';
+import R6EditorReactor, { EditorinitialState } from './R6EditorReactor';
+
 import styled from 'styled-components'
 
 // import R6IDSearch from './IDSearch/R6IDSearch'
-import { RANKAPI, RANKBYREGION } from '../../../../Util/Entity';
-import { ReactorGroupProps } from '../../../../ReactorKit/ReactorGroup';
-import R6EditorReactor, { EditorinitialState } from './R6EditorReactor';
-import { map } from 'rxjs/operators';
-import { deepDistinctUntilChanged } from '../../../../Library/RxJsExtension';
-import ForumReactor from '../../../@Forum/ForumReactor';
+import { RANKAPI } from '../../../../Util/Entity';
+import ForumReactor, { ForumReactorProps } from '../../../@Forum/ForumReactor';
 import R6IDSearch from './R6IDSearch/R6IDSearch';
-import ReactiveView from '../../../../ReactorKit/ReactiveView';
-
-//action이 잘 들어가는지 (so)
-//mutate가 잘되는지
-//Mutate에 맞게 뷰가 잘 수정되는지<div className=""></div>
-//rxjs
+import withReactor from '../../../../ReactorKit/withReactor';
 
 const FLUIDDIV = styled.div`
     width:100%;
@@ -51,7 +44,7 @@ interface Props {
     onCancel?: () => void;
 }
 
-class R6Editor extends React.Component<Props & ReactorGroupProps<ForumReactor>>{
+class R6Editor extends React.Component<Props & ForumReactorProps>{
 
     private editorRef  = React.createRef<Editor>();
     reactor? : R6EditorReactor;
@@ -139,12 +132,11 @@ class R6Editor extends React.Component<Props & ReactorGroupProps<ForumReactor>>{
     }
 
     render(){
-        if (!this.props.reactor) {
-            return null
-        } else {
-            const parentReactor = this.props.reactor;
+       
+            const parentReactor = this.props.getState!();
             const localReactor = this.reactor;
-            const { topic } = parentReactor.currentState
+            const { topic } = parentReactor;
+
             return(
 
                 <CONTAINER>       
@@ -158,7 +150,7 @@ class R6Editor extends React.Component<Props & ReactorGroupProps<ForumReactor>>{
     
                 <FLUIDDIV>
                 { topic === "together" && 
-                    <R6IDSearch reactor={localReactor}></R6IDSearch>
+                    <R6IDSearch {...this.props} ></R6IDSearch>
                 }
                 </FLUIDDIV>
 
@@ -172,7 +164,7 @@ class R6Editor extends React.Component<Props & ReactorGroupProps<ForumReactor>>{
     
                 <FLUIDDIV>
                     <BUTTONGROUP>
-                        <Button size={"big"} onClick={()=>{parentReactor.dispatch({type:"CLICKBACK"})}}> 취소하기 </Button>
+                        <Button size={"big"} onClick={this.props.dispatcher!({type:"CLICKBACK"})}> 취소하기 </Button>
                         <Button size={"big"} positive> 등록하기 </Button>
                     </BUTTONGROUP>
                 </FLUIDDIV>
@@ -180,7 +172,7 @@ class R6Editor extends React.Component<Props & ReactorGroupProps<ForumReactor>>{
             )
         }
        
-    }
+    
 }
 
-export default ReactiveView(R6Editor)
+export default withReactor(R6Editor)

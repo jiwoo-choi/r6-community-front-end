@@ -1,9 +1,10 @@
-import { Reactor } from "../../ReactorKit/Reactor";
+import { Reactor, ReactorControlType } from "../../ReactorKit/Reactor";
 import { Observable , concat, of  } from "rxjs";
 import { takeUntil, map,  filter, delay, finalize, tap } from "rxjs/operators";
 import { R6StatAPI } from "../../Library/R6StatAPI";
 import { ListType, ContentType } from "../../Util/Entity";
 import { flatAxiosResultAndCast, catchErrorJustReturn, distinctUntilActionChanged } from "../../Library/RxJsExtension";
+import { ajax } from 'rxjs/ajax';
 
 // export type MenuType = "공략/팁" | "클랜홍보" | "같이하기" | "자유게시판"
 
@@ -87,8 +88,6 @@ export interface FETCHLIST {
     type: typeof FETCHLIST,
     list: ListType[],
     page: number
-    // topic: Topic,
-    // page: number
 }
 export interface FETCHPOST {
     type: typeof FETCHPOST,
@@ -116,13 +115,21 @@ export interface ForumState {
     isLoading:boolean,
     isError:boolean,
     post?: ContentType,
+    isLogined: boolean,
 }
 
-//@state
-//@reducer
-//@mutation thisAction
-//@action thisAction
-//@action thisAction
+export const ForumStateInitialState : ForumState = {
+    isError: false,
+    isLoading: true,
+    page: 1,
+    mode:"list",
+    topic:"tips",
+    post: undefined,
+    list:[],
+    isLogined: false,
+}
+
+export type ForumReactorProps = ReactorControlType<ForumAction, ForumState>;
 
 export default class ForumReactor extends Reactor<ForumAction, ForumState, ForumMutation> {
 
@@ -165,16 +172,12 @@ export default class ForumReactor extends Reactor<ForumAction, ForumState, Forum
                 of<ForumMutation>({type:"SETLOADING", isLoading: true}),
                 //fetching List
                 this.fetchList(this.currentState.topic, action.newPage).pipe(
-                    // takeUntil(this.action.pipe(filter(value => value === action))),
-                    // distinctUntilActionChanged(this.action, action),
+                    takeUntil(this.action.pipe(filter(value => value === action))),
                     map<ListType[], ForumMutation>( res => {
                         return {type:"FETCHLIST", list: res, page: 1 } 
                     })
                 ),
-                // of<ForumMutation>({type:"FETCHLIST", isLoading: true}),
-                //is Loading
-                //of 로 컨트롤 하지 말것!
-                // of<ForumMutation>({type:"SETLOADING", isLoading: false}),
+                of<ForumMutation>({type:"SETLOADING", isLoading: false}),
             )
 
         case "CLICKPOST":
@@ -229,8 +232,10 @@ export default class ForumReactor extends Reactor<ForumAction, ForumState, Forum
     }
    
     fetchList(topic: Topic, page: number = 1) : Observable<ListType[]> {
+
         return R6StatAPI.shared.get<ListType[]>(`http://www.r6-search.me/topic/${topic}?page=${page}`)
         .pipe(
+            delay(500),
             flatAxiosResultAndCast(),
             catchErrorJustReturn([] as ListType[]),
         )

@@ -1,0 +1,59 @@
+
+
+.header-center {
+    text-align: center;
+}
+
+.button-bottom-top {
+    padding-top:10px;
+    padding-bottom:20px;
+}
+.button-bottom-top a {
+    cursor:pointer;
+}
+
+
+
+.register-background-img {
+    position: absolute;
+    height:100vh;
+    width:100vw;
+    background-image:url(./season18-he.jpg);
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-position: center;  
+}
+
+
+.register-black-layer {
+    position:absolute;
+    background: black;
+    opacity:0.5;
+    width:100vw;
+    height:100vh;
+}
+
+
+.register-container {
+    position:relative;
+    z-index:14;
+    height:100vh;
+    width:100vw;
+    overflow: hidden;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* background: linear-gradient(180deg, #f08, #d0e); */
+}
+
+.register-content {
+    background: white;
+    overflow:hidden;
+    padding:50px;
+    border-radius: 10px;
+    max-width:650px;
+    width:90%;
+    /* transform: translate3d(-50%,-50%,0); */
+}

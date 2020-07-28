@@ -43,6 +43,7 @@
 .login-content-layer .left {
     flex:1;
     display:block;
+    position: relative;
 }
 
 .login-content-layer .right {
@@ -55,8 +56,14 @@
     position:relative;
     height:100%;
     left:-50%;
+    /* background-image:url(./se) */
 }
 
+.register-button-bottom {
+    position:absolute;
+    bottom:15px;
+    right:20px;
+}
 
 .margin-bottom-10 {
   margin-bottom:10px;

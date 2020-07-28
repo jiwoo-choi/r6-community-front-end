@@ -15,7 +15,7 @@ export class R6Comment extends React.PureComponent<{
 
     render(){
         return (
-            <div></div>
+            <div>ㅁㅇㄹㅁㅇㄴㄹ</div>
         )
     }
 }

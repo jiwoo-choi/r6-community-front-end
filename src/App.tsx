@@ -1,14 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 import styled from 'styled-components'
-import { ModalReactor } from './Component/Login/ModalReactor';
-import { register } from './ReactorKit/GlobalStore';
 // import { ModalReactor } from './Component/Modal/ModalReactor';
 import { 
   R6Forum, 
   R6Navigation, 
   R6Footer
 } from './Component';
+import R6Register from './Component/Login/R6Register';
+import R6Login from './Component/Login/R6Login';
+import ForumReactor, { ForumStateInitialState } from './Component/@Forum/ForumReactor';
+import { deepDistinctUntilChanged } from './Library/RxJsExtension';
+import { map, filter, pluck } from 'rxjs/operators';
+import { reduce } from 'lodash';
 
 const PADDING = styled.div`
   max-width: 1200px;
@@ -56,46 +60,42 @@ const CONTAINER = styled.div`
 // 앱이 꺼지기 전까지는요. 글로벌 스토어
 // const value = register([new ModalReactor({isOpened: false},false,true)])
 
+const SECTIONWRAPPER = styled.div`
+  min-height:90vh;
+`
+
+let a = new ForumReactor(ForumStateInitialState);
+
+
 function App() {
-//    <GlobalReactor value={value}>
- 
+  const [loginState, loginSetter] = useState(0);
+  const [registerState, registerSetter] = useState(0);
 
   return(
 
       <div className="App">
-        <R6Navigation></R6Navigation>
-        <R6Forum></R6Forum>
-        <R6Footer></R6Footer>
-        {/* <GlobalReactor.Provider value={value}> */}
-        {/* <R6Table></R6Table> */}
-        {/* <R6Editor store={store}></R6Editor> */}
-        {/* <R6Comment comments={commentMockup}></R6Comment> */}
-        {/* <R6List></R6List> */}
-        {/* <GLOBALNAV>
-          <NAVLINKTS>
-            <IMAGE src="./logo.png"></IMAGE>
-            <ABC> <Header>R6-Search 커뮤니티</Header> </ABC>
-            <Button >로그인하기</Button>
-            <Button >회원가입하기</Button>
-          </NAVLINKTS>
-        </GLOBALNAV>
-        <CONTAINER>
-          <R6Navigation></R6Navigation>
-        </CONTAINER> */}
-        {/* <GlobalNavigation></GlobalNavigation>
-        <CommunityNavigation></CommunityNavigation>
-        <R6Table></R6Table>
-       <Pagination
-        boundaryRange={0}
-        defaultActivePage={1}
-        ellipsisItem={null}
-        firstItem={null}
-        lastItem={null}
-        siblingRange={1}
-        totalPages={10}
-      /> */}
-      {/* <R6Login></R6Login> */}
-      {/* </GlobalReactor.Provider> */}
+        {/* <R6Navigation></R6Navigation>
+            <SECTIONWRAPPER>
+              <R6Forum></R6Forum>
+            </SECTIONWRAPPER>
+            <R6Login stater={registerSetter}></R6Login>
+          <R6Footer></R6Footer> */}
+        { registerState === 0 && 
+          <>
+            <R6Navigation stater={loginSetter}></R6Navigation>
+            <SECTIONWRAPPER>
+              <R6Forum></R6Forum>
+            </SECTIONWRAPPER>
+            { loginState && 
+              <R6Login loginStater={loginSetter} stater={registerSetter}></R6Login>
+            } 
+            <R6Footer></R6Footer>
+          </>
+        } 
+        { registerState === 1 &&
+          <R6Register stater={registerSetter}></R6Register>
+        }
+      
       </div>
     );
 

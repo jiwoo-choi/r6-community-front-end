@@ -40,14 +40,14 @@ const BRANDLOGO = styled.a`
   
 `
 //onClick={()=>{this.props.globalReactor.action.next({type:"MODALTOGGLE"})}}
-class R6Navigation extends React.Component {
+class R6Navigation extends React.Component<{stater: any}> {
     
     render(){
         return(
             <GLOBALNAV>
                 <NAVITEMS>
                     <BRANDLOGO> R6 Search - TALK </BRANDLOGO>
-                    <Button secondary compact >로그인하기</Button>
+                    <Button secondary compact onClick={()=>{this.props.stater(1)}}>로그인하기</Button>
                 </NAVITEMS>
             </GLOBALNAV>
         )

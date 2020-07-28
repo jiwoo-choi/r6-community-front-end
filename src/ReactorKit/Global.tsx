@@ -2,9 +2,8 @@ import React from "react";
 // import { ReactorView } from "./ReactorView";
 import { Reactor } from "./Reactor";
 import { GlobalReactor, GlobalReactorType } from "./GlobalStore";
-import ReactiveView, { reactorAccessible, reactorTesterKit } from "./ReactiveView";
+import ReactiveView from "./withReactor";
 import { DisposeBag } from "./DisposeBag";
-
 
 export interface GlobalReactorProps<R,S>{
     globalReactor: R;
@@ -18,7 +17,7 @@ export default function Global<
 > ( 
     Component: React.ComponentClass<P & GlobalReactorProps<R,S>,any>, key: string
     ) : React.ComponentClass<Omit<P, keyof GlobalReactorProps<R,S>>, GlobalReactorProps<R,S>> {
-        return class extends React.Component<Omit<P, keyof GlobalReactorProps<R,S>>, GlobalReactorProps<R,S>> implements reactorAccessible<R>, reactorTesterKit {
+        return class extends React.Component<Omit<P, keyof GlobalReactorProps<R,S>>, GlobalReactorProps<R,S>> {
 
             static displayName = "REACTORKIT_GLOBAL"
             static contextType = GlobalReactor;

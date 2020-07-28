@@ -10,9 +10,9 @@ import styled from "styled-components";
 import { ReactComponent as EmptyBox } from './empty-box.svg'
 import { RANKBYREGION, GENERALAPI } from "../../../../../Util/Entity";
 import { Icon } from "semantic-ui-react";
-import { ReactorGroupProps } from "../../../../../ReactorKit/ReactorGroup";
 import R6EditorReactor from "../R6EditorReactor";
-import ReactiveView from "../../../../../ReactorKit/ReactiveView";
+import ReactiveView from "../../../../../ReactorKit/withReactor";
+import withReactor from "../../../../../ReactorKit/withReactor";
 
 const RANK_CONTAINER = styled.div`
     display:flex;
@@ -50,13 +50,13 @@ const CONTENT_PART = styled.div`
 
 
 
-class R6IDSearch extends React.PureComponent<ReactorGroupProps<R6EditorReactor>, SearchState> {
+class R6IDSearch extends React.PureComponent<{}, SearchState> {
 
 
     reactor?: R6IDSearchReactor;
     subject!: Subject<any>;
 
-    constructor(props:ReactorGroupProps) {
+    constructor(props:{}) {
         super(props)
         this.state = R6SearchinitialState;
     }
@@ -78,7 +78,8 @@ class R6IDSearch extends React.PureComponent<ReactorGroupProps<R6EditorReactor>,
         return list.map( (value, index) => {
             if (value.length > 0) {
                 return (
-                    <div className="autocomplete-cell" key={"CELL_"+index} onMouseDown={()=>{this.props.reactor?.dispatch({type:"SELECTRANK", data: value[0]})}}> 
+                    //this.props.reactor?.dispatch({type:"SELECTRANK", data: value[0]})
+                    <div className="autocomplete-cell" key={"CELL_"+index} onMouseDown={()=>{}}> 
                         <div className="tag">
                             {lists[index]} 서버 
                         </div>
@@ -161,7 +162,7 @@ class R6IDSearch extends React.PureComponent<ReactorGroupProps<R6EditorReactor>,
     }
 
     render(){
-        if (!this.props.reactor) {
+        if (!this.props) {
             console.warn('R6IDSEARCH NOT LOADED')
             return null
         } else {
@@ -196,7 +197,7 @@ class R6IDSearch extends React.PureComponent<ReactorGroupProps<R6EditorReactor>,
         }
     }
 }
-export default ReactiveView(R6IDSearch)
+export default withReactor(R6IDSearch)
 
         // this.reactor?.state.pipe(
         //     map((value) => value.isLoading ),

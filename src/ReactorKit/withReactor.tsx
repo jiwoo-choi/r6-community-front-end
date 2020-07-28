@@ -1,49 +1,93 @@
-import { Reactor } from "./Reactor";
+import { Reactor, ReactorControlType } from "./Reactor";
 import { ComponentClass } from "react";
+import { DisposeBag } from "./DisposeBag";
 import React from "react";
+import { debounceTime,  map, skip } from "rxjs/operators";
+import { deepDistinctUntilChanged } from "../Library/RxJsExtension";
+import { Observable } from "rxjs";
 
-export function withReactor<
-    R extends Reactor<any,State,any>,
-    State
-> ( Component : ComponentClass<{reactor?: R, currentState?:State}> ) : ComponentClass<{reactor?:R}>{
-    //글로벌로 받을지
-    //아니면 여기서받을지?
-    //renderer props?
-    //HOC? renderer Props?
-    //랜더러프롭스.. 
-    //currentState...
-    // grouping으로?
 
-    return class extends React.PureComponent<{reactor?:R}, {updater : number}> {
-        
-        
-        constructor(props:{reactor?:R}){
-            super(props);
-            this.state = {
-                updater : 1
+
+// export interface ControlProps<Action, State> {
+//     reactor_control? : ReactorControlType<Action, State>
+// }
+
+
+
+export default function withReactor<
+Action = any, 
+State = any,
+P = {}, // original props
+>(
+    Component: ComponentClass<P & ReactorControlType<Action,State>>, parentFilterMapper?:(state: State) => Partial<State>, transfromStateStreamFromThisComponent : boolean = true, skipSync : boolean = true
+) : React.ComponentClass<P & ReactorControlType<Action,State>> {
+    class A extends React.PureComponent<P & ReactorControlType<Action,State>, {updatar:number}> {
+
+        static displayName = 'REACTORKIT_REACTIVE_VIEW';
+
+        disposeBag: DisposeBag | null = null;
+        private _parentStateStream?: Observable<State>; 
+        private nextControls? : ReactorControlType<Action, State>;
+
+        constructor(props:P) {
+            super(props)
+            if (Component.displayName === "REACTORKIT_GLOBAL") {
+                console.error("ERROR : GLOBAL SHOULD BE MOST OUTSIDE OF COMPONENT")
+            }
+            this.state = { updatar : 1 }
+        }
+
+        UNSAFE_componentWillMount(){       
+
+            this.disposeBag = new DisposeBag();
+            function customMapper(filterMapper?: (state: State) => any) {
+                if (filterMapper) {
+                    return map(filterMapper)
+                } else {
+                    return map<State,State>( value => value )
+                }
+            }
+
+            if (this.props.stateStream) {
+                this._parentStateStream = this.props.stateStream
+                if (transfromStateStreamFromThisComponent && parentFilterMapper) {
+                    this.nextControls = { stateStream: this.props.stateStream.pipe(customMapper(parentFilterMapper)), getState: this.props.getState, dispatcher: this.props.dispatcher }
+                    // this.nextControls.stateStream = this.props.stateStream.pipe(customMapper(parentFilterMapper))
+                } else {
+                    this.nextControls = this.props
+                }
+            }
+
+            if (this._parentStateStream) {
+
+                this.disposeBag!.disposeOf = this._parentStateStream!.pipe(
+                    customMapper(parentFilterMapper),
+                    deepDistinctUntilChanged(), 
+                    skip((skipSync? 1 : 0)),
+                    debounceTime(50), 
+                ).subscribe( 
+                    res => {
+                        this.setState({updatar : this.state.updatar * -1})  
+                    }
+                )
+            }
+
+            if (!this._parentStateStream) {
+                this.disposeBag = null;
             }
         }
 
-        componentDidMount() {
-            this.props.reactor?.state.subscribe( res => this.setState({updater: this.state.updater * -1}))
-            //맵퍼만들어서 그걸 이용하기.
-            // withReactor()(Compomnent)
-            //ampper은 어디서?
-            // force update
-            // 증분랜더링 막기.
-            // state만들기
-            // withprops
-            // this.setState({state:1});
-            // 변경되면 다시그려준다?
-            // currentState를 넣어주고 setState를 바꿔준다<div className=""></div>
-            // 증분렌더링을 마긍ㄹ 애들이 필요하다.
-            // 기본적인 필터링을 해야하긴한다.
+
+        componentWillUnmount(){
+            /** unsubscribe and release localReactor */
+            this.disposeBag?.unsubscribe();
+            this.disposeBag = null;
+
         }
-        
+
         render(){
-            return <Component {...this.props} currentState={this.props.reactor?.currentState}> </Component>
+            return( <Component {...this.props} reactor_control={this.nextControls} updatar$updatar$updatar={this.state.updatar}></Component>)
         }
     }
-    
-}
-
+    return A;
+} 

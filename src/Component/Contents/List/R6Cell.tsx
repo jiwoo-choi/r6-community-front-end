@@ -84,11 +84,11 @@ const RECOMMENDEDFLEX = styled.div<{isNotice: boolean}>`
     }
 `
 
-export default class R6Cell extends React.Component<{data : ListType, isNotice:boolean}> {
+export default class R6Cell extends React.Component<{data : ListType, isNotice:boolean, onClick:()=>void}> {
     
     render(){
         return(
-            <CELLSTYLE isNotice={this.props.isNotice}>
+            <CELLSTYLE onClick={this.props.onClick} isNotice={this.props.isNotice}>
                 <GRIDOUTER>
                     <RECOMMENDEDFLEX isNotice={this.props.isNotice}>
                         { (!this.props.isNotice) ?

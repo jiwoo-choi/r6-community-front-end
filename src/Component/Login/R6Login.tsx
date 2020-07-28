@@ -1,14 +1,8 @@
-import React from "react";
+import React, { SetStateAction, Dispatch } from "react";
 import { Transition, Image, Modal, Header, Button, Input, Icon, Form } from "semantic-ui-react";
-import { ModalState, ModalReactor } from './ModalReactor';
-import Global, { GlobalReactorProps } from "../../ReactorKit/Global";
 import styled from "styled-components";
-import { values } from "mobx";
 import './R6Login.css';
-import ReactiveView, { ReactorView } from "../../ReactorKit/ReactiveView";
-import { DisposeBag } from "../../ReactorKit/DisposeBag";
-import { fromEventWithEmitter } from "../../ReactorKit/sendAction";
-
+import { motion } from 'framer-motion'
 
 const MODALCONTAINER = styled.div`
     position:fixed;
@@ -142,50 +136,52 @@ const OTHERCONTENTS = styled.div`
     transform : translate3d(-50%, -50%, 0);
 `
 
-
-export class R6Login extends React.Component {
+export class R6Login extends React.Component<{stater :Dispatch<SetStateAction<number>>, loginStater: Dispatch<SetStateAction<number>>}>  {
 
     render(){
+        return(
+                <>
+                <motion.div 
+                    initial={{ opacity:0.1}}
+                    animate={{ opacity:0.4}}
+                    className="black-layer"
+                    onClick={()=>{this.props.loginStater(0)}}
+                /> 
+                <motion.div className="login-content-layer">
+                    <div className="login-content-layer relative">
+                        <div className="left padder">
+                            <div className="header login-text-center login-font">
+                                로그인하기
+                            </div>
+                            <div className="sub-header login-text-center login-font">
+                                안녕하세요! 만나서 반갑습니다.
+                            </div>
 
-        return <></>
-        // return (
-        //         <>  
-        //         <div className="black-layer" ref={(ref1) =>  fromEventWithEmitter(ref1!,'click')}></div>
-        //         <div className="login-content-layer">
-        //             <div className="login-content-layer relative">
-        //                 <div className="left padder">
-        //                     <div className="header login-text-center login-font">
-        //                         로그인하기
-        //                     </div>
-        //                     <div className="sub-header login-text-center login-font">
-        //                         안녕하세요! 만나서 반갑습니다.
-        //                     </div>
+                            <div className="form-container">
+                                <Form.Field >
+                                    <div className="margin-bottom-5"> <strong> 아이디 </strong>  </div>
+                                    <Input className="margin-bottom-10" type="text" iconPosition='left' icon={"user"} placeholder="아이디 입력" fluid/>
+                                    <div className="margin-bottom-5"> <strong> 비밀번호 </strong> </div>
+                                    <Input className="margin-bottom-20" type='password' iconPosition='left' icon={"key"}  placeholder="비밀번호 입력" fluid />
+                                    </Form.Field>
+                            </div>
 
-        //                     <div className="form-container">
-        //                         <Form.Field >
-        //                             <div className="margin-bottom-5"> <strong> 아이디 </strong>  </div>
-        //                             <Input className="margin-bottom-10" type="text" iconPosition='left' icon={"at"} placeholder="이메일 입력" fluid/>
-        //                             <div className="margin-bottom-5"> <strong> 비밀번호 </strong> </div>
-        //                             <Input className="margin-bottom-20" type='password' iconPosition='left' icon={"key"}  placeholder="비밀번호 입력" fluid />
-        //                             </Form.Field>
-        //                     </div>
+                            <Button fluid color={"green"}>로그인하기</Button>
+                            <div className="margin-bottom-10"></div>
+                            <div className="description login-font login-text-center">
+                                로그인은 개인 정보 보호 정책 및  서비스 약관에 동의하는 것을 의미합니다.
+                            </div>
+                            <Button floated={"right"} color={"grey"} size={"small"} inverted className="register-button-bottom" onClick={()=>this.props.stater(1)}>회원가입하기</Button>
+                        </div>
+                        <div className="right">
+                            <img src="./season18-he.jpg" className="image"/>
+                        </div>
 
-        //                     <Button fluid color={"green"}>로그인하기</Button>
-        //                     <div className="margin-bottom-10"></div>
-        //                     <div className="description login-font login-text-center">
-        //                         로그인은 개인 정보 보호 정책 및  서비스 약관에 동의하는 것을 의미합니다.
-        //                     </div>
-        //                 </div>
-        //                 <div className="right">
-        //                     <img src="./season18-he.jpg" className="image"/>
-        //                 </div>
-        //             </div>
-        //         </div>
-            
-        //         </>
-        //     )
+                    </div>
+                </motion.div>
+                </>
+            )
         }
-           
 }
 
 export default R6Login

@@ -1,5 +1,5 @@
 import React from "react";
-import { Reactor } from "./Reactor";
+import { Reactor, ReactorControlType } from "./Reactor";
 import { R6Footer } from "../Component";
 
 
@@ -11,15 +11,11 @@ function map(children : React.ReactNode, func: (child : React.ReactElement, inde
 }
 
 
-export interface ReactorGroupProps<T = any> {
-    reactor?: T
-}
-
 //router?
 //ReactRouter
 //ReactorRouter
 //https://www.bsidesoft.com/830
-export default class ReactorGroup extends React.PureComponent<ReactorGroupProps>{
+export default class ReactorGroup extends React.PureComponent<ReactorControlType<any,any>>{
     
     render(){
         return(
@@ -28,9 +24,8 @@ export default class ReactorGroup extends React.PureComponent<ReactorGroupProps>
                     map( this.props.children, (child, index, total) => {
                         // console.log(child.type)
                         return React.cloneElement( child , {
+                            ...this.props,
                             ...child.props,
-                            reactor:this.props.reactor,
-                            // initialState: this.props.initialState
                         })
                     })
                 }
