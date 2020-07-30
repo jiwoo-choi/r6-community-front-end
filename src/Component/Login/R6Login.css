@@ -15,9 +15,9 @@
     top:50%;
     left:50%;
     z-index:50;
-    height: 432px;
+    height: 451px;
     width: 100%;
-    max-width:700px;
+    max-width:731px;
     background: black;
     transform: translate3d(-50%,-50%,0);
     overflow:hidden;
@@ -55,7 +55,7 @@
 .login-content-layer .right img {
     position:relative;
     height:100%;
-    left:-50%;
+    left:-54%;
     /* background-image:url(./se) */
 }
 
@@ -88,26 +88,28 @@
     text-align: center;
 }
 
-.header {
-    padding:50px 0 30px;
+.header-text {
+    padding:40px 0 20px;
     font-weight:700;
     color:#e5e6e7;
-    font-size:2.3rem;
+    font-size:2.2rem;
 }
 
 .sub-header{
     font-weight:700;
     color:#b6b7b8;
-    font-size:1.4rem;
+    font-size:1.2rem;
 }
 
 .form-container {
+    margin-top:17px;
     color:white;
 }
 
 .description {
     color:#646568;
     font-size:0.8rem;
+    margin-bottom:40px;
 }
 
 

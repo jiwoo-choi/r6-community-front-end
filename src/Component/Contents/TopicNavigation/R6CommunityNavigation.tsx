@@ -3,11 +3,8 @@ import styled from 'styled-components'
 import {  Menu, Icon } from "semantic-ui-react";
 import ForumReactor, {  ForumState, ForumAction, ForumReactorProps } from "../../@Forum/ForumReactor";
 import { map } from "rxjs/operators";
-import { deepDistinctUntilChanged } from "../../../Library/RxJsExtension";
-import ReactiveView from "../../../ReactorKit/withReactor";
-import withReactor from "../../../ReactorKit/withReactor";
-import { Reactor } from "../../../ReactorKit/Reactor";
 
+import { withReactor } from 'reactivex-redux'
 
 const NAVITEMS = styled.div`
   display: flex;
@@ -34,53 +31,38 @@ const BRANDLOGO = styled.a`
 
 class R6CommunityNavigation extends React.PureComponent<ForumReactorProps> {
 
-    // constructor(props: {
-    //     reactor?: ForumReactor
-    // }) {
-    //     super(props);
-    //     this.state = this.props.reactor?.currentState!;
-    // }
-
-    componentDidMount(){
-        // this.props.reactor?.state.pipe(
-        //     map( res => res.topic ),
-        //     deepDistinctUntilChanged(),
-        // ).subscribe(
-        //     topic => this.setState({topic})
-        // )
-    }
+    dispatcher = this.props.reactor_control.dispatcher;
 
     render() {
-
-            const {topic} = this.props.getState!();
+            const {topic} = this.props.reactor_control.getState();
 
             return(
                 <div style={{marginBottom:'20px'}}>
                     <Menu size={"large"} compact pointing secondary>
                         <Menu.Item  
                             active={topic === "tips"}
-                            onClick={this.props.dispatcher!({type:"CLICKTOPIC", newTopic:"tips"})}
+                            onClick={this.dispatcher({type:"CLICKTOPIC", newTopic:"tips"})}
                         >
                         <Icon name='gamepad' disabled={topic !== "tips"} />
                         공략/팁 게시판
                         </Menu.Item>
                         <Menu.Item  
                             active={topic === "clan"}
-                            onClick={this.props.dispatcher!({type:"CLICKTOPIC", newTopic:"clan"})}
+                            onClick={this.dispatcher({type:"CLICKTOPIC", newTopic:"clan"})}
                         >
                         <Icon name='signup' disabled={topic !== "clan"} />
                         클랜 정보 게시판
                         </Menu.Item>
                         <Menu.Item
                             active={topic === "together"}
-                            onClick={this.props.dispatcher!({type:"CLICKTOPIC", newTopic:"together"})}
+                            onClick={this.dispatcher({type:"CLICKTOPIC", newTopic:"together"})}
                         >
                         <Icon name='users' disabled={topic !== "together"}/>
                         같이하기
                         </Menu.Item>
                         <Menu.Item
                             active={topic === "free"}
-                            onClick={this.props.dispatcher!({type:"CLICKTOPIC", newTopic:"free"})}
+                            onClick={this.dispatcher({type:"CLICKTOPIC", newTopic:"free"})}
                         >
                         <Icon name='list alternate' disabled={topic !== "free"} />
                         자유게시판

@@ -8,6 +8,11 @@
     padding-top:10px;
     padding-bottom:20px;
 }
+
+#button-top-margin {
+    margin-top:20px;
+}
+
 .button-bottom-top a {
     cursor:pointer;
 }
@@ -57,3 +62,4 @@
     width:90%;
     /* transform: translate3d(-50%,-50%,0); */
 }
+

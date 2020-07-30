@@ -94,13 +94,13 @@ export default class R6Cell extends React.Component<{data : ListType, isNotice:b
                         { (!this.props.isNotice) ?
                          (
                             <>
-                                <img src="./icon-vote-up.png"></img>
+                                <img src={require('./icon-vote-up.png')}></img>
                                 <div> {this.props.data.recommendCnt} </div>
                             </>
                         ) : 
                         (
                             <>
-                            <img src="./tack.png"></img>
+                            <img src={require('./tack.png')}></img>
                             </>
                         )
                         }

@@ -13,6 +13,7 @@ import ForumReactor, { ForumStateInitialState } from './Component/@Forum/ForumRe
 import { deepDistinctUntilChanged } from './Library/RxJsExtension';
 import { map, filter, pluck } from 'rxjs/operators';
 import { reduce } from 'lodash';
+import Provider from './ReactorKit/Provider';
 
 const PADDING = styled.div`
   max-width: 1200px;
@@ -64,15 +65,11 @@ const SECTIONWRAPPER = styled.div`
   min-height:90vh;
 `
 
-let a = new ForumReactor(ForumStateInitialState);
-
-
 function App() {
   const [loginState, loginSetter] = useState(0);
   const [registerState, registerSetter] = useState(0);
 
   return(
-
       <div className="App">
         {/* <R6Navigation></R6Navigation>
             <SECTIONWRAPPER>
@@ -80,6 +77,10 @@ function App() {
             </SECTIONWRAPPER>
             <R6Login stater={registerSetter}></R6Login>
           <R6Footer></R6Footer> */}
+          {/* <R6Login loginStater={loginSetter} stater={registerSetter}></R6Login> */}
+          {/* <R6Register stater={registerSetter}></R6Register> */}
+          {/* <R6Confirmation></R6Confirmation> */}
+          {/* <R6Confirmation></R6Confirmation> */}
         { registerState === 0 && 
           <>
             <R6Navigation stater={loginSetter}></R6Navigation>

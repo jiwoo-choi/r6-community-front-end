@@ -2,7 +2,7 @@ import { Input, Button } from "semantic-ui-react";
 import React from "react";
 import styled from 'styled-components'
 import ForumReactor, { ForumState, ForumReactorProps } from "../../@Forum/ForumReactor";
-import withReactor from "../../../ReactorKit/withReactor";
+import {withReactor} from "reactivex-redux";
 
 
 
@@ -26,6 +26,8 @@ const SEARCHAREA = styled.div`
 
 class R6ListFooter extends React.PureComponent<ForumReactorProps>{
 
+    dispatcher = this.props.reactor_control.dispatcher
+
     render() {
         return(
             <>
@@ -35,7 +37,7 @@ class R6ListFooter extends React.PureComponent<ForumReactorProps>{
                 </BUTTONAREA>
                 <SEARCHAREA>
                     <Input style={{marginRight:'10px'}} icon='search' placeholder='Search...' />
-                    <Button color={"black"} onClick={this.props.dispatcher!({type:"CLICKWRITE"})}> 글쓰기 </Button>
+                    <Button color={"black"} onClick={this.dispatcher({type:"CLICKWRITE"})}> 글쓰기 </Button>
                 </SEARCHAREA>
             </>
         );

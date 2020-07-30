@@ -7,7 +7,7 @@ const POSTAREA = styled.div`
     
 `
 
-export class R6Comment extends React.PureComponent<{
+export default class R6Comment extends React.PureComponent<{
     reactor?: ForumReactor
     initialState?: ForumState
 }, ForumState> {

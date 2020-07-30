@@ -3,9 +3,6 @@ import moxios from "moxios";
 import { listResultMockup, postResultMockup } from "../../Data/mockup";
 import { R6StatAPI } from "../../Library/R6StatAPI";
 import { from } from "rxjs";
-import { shallow } from "enzyme";
-
-import React from 'react';
 
 
 
@@ -20,6 +17,7 @@ describe( "Forum Reactor Test / Reactor Action -> Mutate -> State Test", () => {
         topic:"clan",
         post: undefined,
         list:[],
+        isLogined:false,
     }
 
     let api = R6StatAPI.shared.api;

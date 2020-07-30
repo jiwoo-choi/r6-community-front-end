@@ -1,17 +1,8 @@
-import { Reactor, ReactorControlType } from "./Reactor";
+import { ReactorControlType , DisposeBag, deepDistinctUntilChanged} from "reactivex-redux";
 import { ComponentClass } from "react";
-import { DisposeBag } from "./DisposeBag";
 import React from "react";
 import { debounceTime,  map, skip } from "rxjs/operators";
-import { deepDistinctUntilChanged } from "../Library/RxJsExtension";
 import { Observable } from "rxjs";
-
-
-
-// export interface ControlProps<Action, State> {
-//     reactor_control? : ReactorControlType<Action, State>
-// }
-
 
 
 export default function withReactor<
@@ -29,13 +20,18 @@ P = {}, // original props
         private _parentStateStream?: Observable<State>; 
         private nextControls? : ReactorControlType<Action, State>;
 
-        constructor(props:P) {
+        constructor(props:P & ReactorControlType<Action,State>) {
             super(props)
             if (Component.displayName === "REACTORKIT_GLOBAL") {
                 console.error("ERROR : GLOBAL SHOULD BE MOST OUTSIDE OF COMPONENT")
             }
             this.state = { updatar : 1 }
         }
+
+        // shouldComponentUpdate(nextProps: Readonly<P>, nextState: Readonly<any>, nextContext: any){
+        //     // console.log("CALLED!");
+        //     // return false
+        // }
 
         UNSAFE_componentWillMount(){       
 

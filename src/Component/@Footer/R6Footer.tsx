@@ -9,7 +9,6 @@ const FOOTERCONTAINER = styled.footer`
     width:100%;
 `
 
-
 const FROUMMARGIN = styled.div`
     margin: 0 auto;
     max-width: 1200px;
@@ -25,9 +24,8 @@ const HELLO = styled.div`
     opacity:0.3;
 `
 
-
 export default class R6Footer extends React.Component {
-
+    
     render(){
         return(
             <FOOTERCONTAINER>

@@ -1,21 +1,9 @@
 import React from "react";
 import ForumReactor, { ForumState, ForumStateInitialState, ForumAction } from "./ForumReactor";
-import R6CommunityNavigation from "../Contents/TopicNavigation/R6CommunityNavigation";
-import ReactorGroup from "../../ReactorKit/ReactorGroup";
+import { deepDistinctUntilChanged, ReactorControlType } from "reactivex-redux";
 import styled from "styled-components";
-import { R6List } from "../Contents";
-import { R6StatAPI } from "../../Library/R6StatAPI";
-import R6ListFooter from "../Contents/ListFooter/R6ListFooter";
-import R6IDSearch from "../Contents/Post/Edit/R6IDSearch/R6IDSearch";
-import R6Post from "../Contents/Post/View/R6Post";
-import R6QuickSearch from "../QuickSearch/R6QuickSearch";
-import R6PostWrite from "../Contents/Post/Edit/R6PostWrite";
-import { map, distinctUntilChanged, observeOn, tap } from "rxjs/operators";
-import { deepDistinctUntilChanged } from "../../Library/RxJsExtension";
-import { ReactorControlType } from "../../ReactorKit/Reactor";
-import { Subject, queueScheduler } from "rxjs";
-
-
+import { R6Post, R6PostWrite, R6ListFooter, R6List , R6CommunityNavigation} from '../Contents'
+import { map } from "rxjs/operators";
 
 const FROUMMARGIN = styled.div`
     margin: 0 auto;
@@ -24,16 +12,16 @@ const FROUMMARGIN = styled.div`
     padding: 0 1rem;
 `
 
-export class R6Forum extends React.Component{
+export class R6Forum extends React.Component {
     
     reactor?: ForumReactor | undefined;
     reactorControls?: ReactorControlType<ForumAction, ForumState>;
     initialState?: ForumState
 
-
     componentWillMount(){
         this.reactor = new ForumReactor(ForumStateInitialState)
         this.reactorControls = this.reactor.getReactorControl();
+        console.log(this.reactorControls)
     }
 
     componentDidMount(){
@@ -46,39 +34,30 @@ export class R6Forum extends React.Component{
         ).subscribe( 
             mode=> this.setState({mode})
         )
-
     }
 
     render(){
-        //ismodal
+
         return(
             <React.Fragment>
                 <FROUMMARGIN>
-                    <ReactorGroup {...this.reactorControls}>
-                        <R6CommunityNavigation></R6CommunityNavigation>
+                        <R6CommunityNavigation reactor_control={this.reactorControls!}></R6CommunityNavigation>
                         {
                             this.reactor?.currentState.mode === "list" &&
-                                <R6List></R6List>
+                                <R6List reactor_control={this.reactorControls!}></R6List>
                         }
                         {
                             this.reactor?.currentState.mode === "list" &&
-                                <R6ListFooter></R6ListFooter>
+                                <R6ListFooter reactor_control={this.reactorControls!}></R6ListFooter>
                         }
                         {
                             this.reactor?.currentState.mode === "edit" &&
-                                <R6PostWrite></R6PostWrite>
+                                <R6PostWrite reactor_control={this.reactorControls!}></R6PostWrite>
                         }
                         {
                             this.reactor?.currentState.mode === "view" &&
-                                <R6Post></R6Post>
+                                <R6Post reactor_control={this.reactorControls!}></R6Post>
                         }
-
-
-                        {/* <R6IDSearch></R6IDSearch> */}
-                        {/* <R6QuickSearch></R6QuickSearch> */}
-                        {/* <R6List></R6List> */}
-                        {/* <DUMMY></DUMMY> */}
-                        </ReactorGroup>
                 </FROUMMARGIN>
             </React.Fragment>
         )

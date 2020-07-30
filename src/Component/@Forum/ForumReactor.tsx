@@ -1,30 +1,11 @@
-import { Reactor, ReactorControlType } from "../../ReactorKit/Reactor";
 import { Observable , concat, of  } from "rxjs";
-import { takeUntil, map,  filter, delay, finalize, tap } from "rxjs/operators";
+import { ajax } from "rxjs/ajax";
+
+import { takeUntil, map,  filter, delay, tap  } from "rxjs/operators";
 import { R6StatAPI } from "../../Library/R6StatAPI";
-import { ListType, ContentType } from "../../Util/Entity";
-import { flatAxiosResultAndCast, catchErrorJustReturn, distinctUntilActionChanged } from "../../Library/RxJsExtension";
-import { ajax } from 'rxjs/ajax';
-
-// export type MenuType = "공략/팁" | "클랜홍보" | "같이하기" | "자유게시판"
-
-
-// export const MENUCLICKACTION = 'MENUCLICKACTION'
-
-// export interface MenuClickAction { 
-//     type: typeof MENUCLICKACTION
-//     menu : MenuType
-// }
-
-// export const MODECHANGE = 'MODECHANGE'
-
-// export interface FETCHING { 
-//     type: typeof MODECHANGE
-//     query: ListMode
-// }
-
-// 입력하는 액션 클릭하는 액션
-// 다른리액터로 보내기? <owyaeh className=""></owyaeh>
+import { ListType, ContentType, PostListType } from "../../Util/Entity";
+import { flatAxiosResultAndCast, catchErrorJustReturn } from "../../Library/RxJsExtension";
+import { Reactor, ReactorControlProps,  ReactorControlType } from "reactivex-redux";
 
 export function TopicToString( topicType: Topic) {
     switch(topicType) {
@@ -129,7 +110,10 @@ export const ForumStateInitialState : ForumState = {
     isLogined: false,
 }
 
-export type ForumReactorProps = ReactorControlType<ForumAction, ForumState>;
+export interface ForumReactorProps extends ReactorControlProps<ForumAction, ForumState> { 
+    reactor_control: ReactorControlType<ForumAction, ForumState>;
+} ;
+
 
 export default class ForumReactor extends Reactor<ForumAction, ForumState, ForumMutation> {
 
@@ -148,8 +132,8 @@ export default class ForumReactor extends Reactor<ForumAction, ForumState, Forum
                         takeUntil(this.action.pipe(filter((value)=> {
                             return value.type === action.type
                         }))),
-                        map<ListType[], ForumMutation>( res => {
-                            return {type:"FETCHLIST", list: res, page: 1 } 
+                        map<PostListType, ForumMutation>( res => {
+                            return {type:"FETCHLIST", list: res.postList, page: 1 } 
                         }),
                     ),
                     // of<ForumMutation>({type:"SETLOADING", isLoading: false}).pipe( tap (value => console.log("VALUE OUT")))
@@ -173,8 +157,8 @@ export default class ForumReactor extends Reactor<ForumAction, ForumState, Forum
                 //fetching List
                 this.fetchList(this.currentState.topic, action.newPage).pipe(
                     takeUntil(this.action.pipe(filter(value => value === action))),
-                    map<ListType[], ForumMutation>( res => {
-                        return {type:"FETCHLIST", list: res, page: 1 } 
+                    map<PostListType, ForumMutation>( res => {
+                        return {type:"FETCHLIST", list: res.postList, page: 1 } 
                     })
                 ),
                 of<ForumMutation>({type:"SETLOADING", isLoading: false}),
@@ -186,6 +170,7 @@ export default class ForumReactor extends Reactor<ForumAction, ForumState, Forum
             of<ForumMutation>({type:"SETLOADING", isLoading: true}),
             //WebRequest
             this.fetchPost(action.postId).pipe(
+                tap( value => console.log(value)),
                 // takeUntil(this.action.pipe(filter(value => value === action))),
                 map<ContentType, ForumMutation>( res => ({type:"FETCHPOST", post : res}))
             ),
@@ -212,14 +197,13 @@ export default class ForumReactor extends Reactor<ForumAction, ForumState, Forum
                 return newState
             case "FETCHLIST":
                 newState.isLoading = false;
-                if (mutation.list.length === 0){
-                    newState.isError = true;
-                    return newState
-                } else {
-                    newState.list = mutation.list;
-                    newState.page = mutation.page;
-                    return newState
-                }
+                newState.list = mutation.list;
+                newState.page = mutation.page;
+                return newState
+                // if (mutation.list.length === 0){
+                //     newState.isError = true;
+                //     return newState
+                // } else {
             case "FETCHPOST":
                 if (Object.keys(mutation.post).length === 0) {
                     newState.isError = true;
@@ -231,33 +215,16 @@ export default class ForumReactor extends Reactor<ForumAction, ForumState, Forum
         }
     }
    
-    fetchList(topic: Topic, page: number = 1) : Observable<ListType[]> {
+    fetchList(topic: Topic, page: number = 1) : Observable<PostListType> {
 
-        return R6StatAPI.shared.get<ListType[]>(`http://www.r6-search.me/topic/${topic}?page=${page}`)
+        return ajax.getJSON<PostListType>(`http://www.r6-search.me/api/c/topic/${topic}?page=${page}`)
         .pipe(
-            delay(500),
-            flatAxiosResultAndCast(),
-            catchErrorJustReturn([] as ListType[]),
+            catchErrorJustReturn({} as PostListType)
         )
     }
 
     fetchPost(postId: number) : Observable<ContentType> {
-        return R6StatAPI.shared.get<ContentType>(`http://www.r6-search.me/post/${postId}`)
-        .pipe(
-            flatAxiosResultAndCast(),
-            catchErrorJustReturn({} as ContentType)
-        )
+        return ajax.getJSON<ContentType>(`http://www.r6-search.me/api/c/post/${postId}`).pipe( delay(10))
     }
-
-
-
-    // protected transformAction(action: Observable<ForumAction>): Observable<ForumAction> {
-    //     // return action.pipe(filter( action === ))
-    //     this.action.subscribe( res => console.log("ACtion", res))
-
-    //     return action.pipe( tap( res => console.log("TAPPED" , res)))
-    // }
-
-
 
  }

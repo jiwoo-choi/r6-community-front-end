@@ -197,7 +197,7 @@ class R6IDSearch extends React.PureComponent<{}, SearchState> {
         }
     }
 }
-export default withReactor(R6IDSearch)
+export default R6IDSearch
 
         // this.reactor?.state.pipe(
         //     map((value) => value.isLoading ),

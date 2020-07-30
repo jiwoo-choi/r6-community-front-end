@@ -44,6 +44,14 @@ export interface ContentType {
 }
 
 
+export interface PostListType {
+    meta : 
+        {
+            currentPage: number
+            totalPage: number
+        },
+    postList : ListType[]
+}
     
     
 export interface ListType {

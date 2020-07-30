@@ -133,7 +133,7 @@ class R6Editor extends React.Component<Props & ForumReactorProps>{
 
     render(){
        
-            const parentReactor = this.props.getState!();
+            const parentReactor = this.props.reactor_control!.getState();
             const localReactor = this.reactor;
             const { topic } = parentReactor;
 
@@ -164,7 +164,7 @@ class R6Editor extends React.Component<Props & ForumReactorProps>{
     
                 <FLUIDDIV>
                     <BUTTONGROUP>
-                        <Button size={"big"} onClick={this.props.dispatcher!({type:"CLICKBACK"})}> 취소하기 </Button>
+                        <Button size={"big"} onClick={this.props.reactor_control?.dispatcher!({type:"CLICKBACK"})}> 취소하기 </Button>
                         <Button size={"big"} positive> 등록하기 </Button>
                     </BUTTONGROUP>
                 </FLUIDDIV>
@@ -175,4 +175,4 @@ class R6Editor extends React.Component<Props & ForumReactorProps>{
     
 }
 
-export default withReactor(R6Editor)
+export default R6Editor

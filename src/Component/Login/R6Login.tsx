@@ -1,8 +1,11 @@
 import React, { SetStateAction, Dispatch } from "react";
-import { Transition, Image, Modal, Header, Button, Input, Icon, Form } from "semantic-ui-react";
+import { Transition, Image, Modal, Header, Button, Input, Icon, Form, Message } from "semantic-ui-react";
 import styled from "styled-components";
 import './R6Login.css';
 import { motion } from 'framer-motion'
+import LoginReactor, { LoginInitialState, LoginState } from "./R6LoginReactor";
+import { filter, distinctUntilChanged, skip, map } from "rxjs/operators";
+import _ from "lodash";
 
 const MODALCONTAINER = styled.div`
     position:fixed;
@@ -136,7 +139,65 @@ const OTHERCONTENTS = styled.div`
     transform : translate3d(-50%, -50%, 0);
 `
 
-export class R6Login extends React.Component<{stater :Dispatch<SetStateAction<number>>, loginStater: Dispatch<SetStateAction<number>>}>  {
+export class R6Login extends React.Component<{stater :Dispatch<SetStateAction<number>>, loginStater: Dispatch<SetStateAction<number>>}, LoginState>  {
+
+    idInput = React.createRef<HTMLInputElement>();
+    pwdInput = React.createRef<HTMLInputElement>();
+
+    reactor?: LoginReactor | null;
+
+    constructor(props:any){
+        super(props)
+        this.state = LoginInitialState;
+    }
+    
+    UNSAFE_componentWillMount(){
+        this.reactor = new LoginReactor(LoginInitialState)        
+    }
+    
+    componentDidMount(){
+
+        if (this.reactor) {
+
+            // if it is not success
+            this.reactor.disposedBy = this.reactor?.state.pipe(
+                // filter((value,index) => { return value.goto !== true}),
+                // filter((value,index) => { return value.isSuccess !== true}),
+                // distinctUntilChanged(_.isEqual),
+                // skip(1),
+            ).subscribe(
+                res => {
+                    console.log(res);
+                    this.setState({...res})
+                }
+            )
+
+            // login success
+            this.reactor.disposedBy = this.reactor?.state.pipe(
+                filter((value,index) => { return value.isSuccess === true}),
+                // distinctUntilChanged(_.isEqual),
+                // skip(1)
+            ).subscribe(
+                res => this.props.loginStater(0)
+            )
+
+
+            // go to register Page
+            this.reactor.disposedBy = this.reactor?.state.pipe(
+                filter((value,index) => { return value.goto === true}),
+                map( value => value.goto ),
+                // distinctUntilChanged(_.isEqual),
+                // skip(1) 
+            ).subscribe(
+                res => this.props.stater(1)
+            )            
+        }
+    }
+
+    componentWillUnmount(){
+        this.reactor?.disposeAll();
+        this.reactor = null;
+    }
 
     render(){
         return(
@@ -150,31 +211,47 @@ export class R6Login extends React.Component<{stater :Dispatch<SetStateAction<nu
                 <motion.div className="login-content-layer">
                     <div className="login-content-layer relative">
                         <div className="left padder">
-                            <div className="header login-text-center login-font">
+                            <div className="header-text login-text-center login-font">
                                 로그인하기
                             </div>
                             <div className="sub-header login-text-center login-font">
                                 안녕하세요! 만나서 반갑습니다.
                             </div>
 
-                            <div className="form-container">
+                            <div className="form-container" style={{marginBottom:'20px'}}>
+
+                            <Form error={this.state.isError}>
+
                                 <Form.Field >
-                                    <div className="margin-bottom-5"> <strong> 아이디 </strong>  </div>
-                                    <Input className="margin-bottom-10" type="text" iconPosition='left' icon={"user"} placeholder="아이디 입력" fluid/>
-                                    <div className="margin-bottom-5"> <strong> 비밀번호 </strong> </div>
-                                    <Input className="margin-bottom-20" type='password' iconPosition='left' icon={"key"}  placeholder="비밀번호 입력" fluid />
-                                    </Form.Field>
+                                    <label style={{color:'white'}}>아이디</label>
+                                    <input placeholder='ID' ref={this.idInput}/>
+                                </Form.Field>
+                                <Form.Field>
+                                    <label style={{color:'white'}}>비밀번호</label>
+                                    <input placeholder='Password' type={"password"} ref={this.pwdInput}/>
+                                </Form.Field>
+                                <Message error negative>
+                                <p>{this.state.message}</p>
+                                </Message>
+                            </Form>
+
                             </div>
 
-                            <Button fluid color={"green"}>로그인하기</Button>
+                            <Button fluid color={"green"} disabled={this.state.isLoading} loading={this.state.isLoading} onClick={()=>{
+                                this.reactor?.dispatch({
+                                    type:"LOGIN", 
+                                    id: this.idInput.current!.value,
+                                    pwd:this.pwdInput.current!.value
+                                })
+                            }}>로그인하기</Button>
                             <div className="margin-bottom-10"></div>
                             <div className="description login-font login-text-center">
                                 로그인은 개인 정보 보호 정책 및  서비스 약관에 동의하는 것을 의미합니다.
                             </div>
-                            <Button floated={"right"} color={"grey"} size={"small"} inverted className="register-button-bottom" onClick={()=>this.props.stater(1)}>회원가입하기</Button>
+                            <Button floated={"right"} color={"grey"} size={"small"} inverted className="register-button-bottom" onClick={this.reactor?.dispatchFn({type:"GOTOREGISTER"})}>회원가입하기</Button>
                         </div>
                         <div className="right">
-                            <img src="./season18-he.jpg" className="image"/>
+                            <img src={require('./season18-he.jpg')} className="image"/>
                         </div>
 
                     </div>
