@@ -1,19 +1,19 @@
 {
   "files": {
-    "main.css": "/r6-community-front-end/static/css/main.f12184d5.chunk.css",
-    "main.js": "/r6-community-front-end/static/js/main.feadf5b6.chunk.js",
-    "main.js.map": "/r6-community-front-end/static/js/main.feadf5b6.chunk.js.map",
+    "main.css": "/r6-community-front-end/static/css/main.f7aef181.chunk.css",
+    "main.js": "/r6-community-front-end/static/js/main.c9aef69e.chunk.js",
+    "main.js.map": "/r6-community-front-end/static/js/main.c9aef69e.chunk.js.map",
     "runtime-main.js": "/r6-community-front-end/static/js/runtime-main.9ad3bba7.js",
     "runtime-main.js.map": "/r6-community-front-end/static/js/runtime-main.9ad3bba7.js.map",
-    "static/css/2.f4dd663d.chunk.css": "/r6-community-front-end/static/css/2.f4dd663d.chunk.css",
-    "static/js/2.fdd0f617.chunk.js": "/r6-community-front-end/static/js/2.fdd0f617.chunk.js",
-    "static/js/2.fdd0f617.chunk.js.map": "/r6-community-front-end/static/js/2.fdd0f617.chunk.js.map",
+    "static/css/2.3f468aa5.chunk.css": "/r6-community-front-end/static/css/2.3f468aa5.chunk.css",
+    "static/js/2.141fb178.chunk.js": "/r6-community-front-end/static/js/2.141fb178.chunk.js",
+    "static/js/2.141fb178.chunk.js.map": "/r6-community-front-end/static/js/2.141fb178.chunk.js.map",
     "index.html": "/r6-community-front-end/index.html",
-    "precache-manifest.14c68eeaa87bab85f66a804bb99d1514.js": "/r6-community-front-end/precache-manifest.14c68eeaa87bab85f66a804bb99d1514.js",
+    "precache-manifest.ea59196b07334c89680f2b6d1f296808.js": "/r6-community-front-end/precache-manifest.ea59196b07334c89680f2b6d1f296808.js",
     "service-worker.js": "/r6-community-front-end/service-worker.js",
-    "static/css/2.f4dd663d.chunk.css.map": "/r6-community-front-end/static/css/2.f4dd663d.chunk.css.map",
-    "static/css/main.f12184d5.chunk.css.map": "/r6-community-front-end/static/css/main.f12184d5.chunk.css.map",
-    "static/js/2.fdd0f617.chunk.js.LICENSE.txt": "/r6-community-front-end/static/js/2.fdd0f617.chunk.js.LICENSE.txt",
+    "static/css/2.3f468aa5.chunk.css.map": "/r6-community-front-end/static/css/2.3f468aa5.chunk.css.map",
+    "static/css/main.f7aef181.chunk.css.map": "/r6-community-front-end/static/css/main.f7aef181.chunk.css.map",
+    "static/js/2.141fb178.chunk.js.LICENSE.txt": "/r6-community-front-end/static/js/2.141fb178.chunk.js.LICENSE.txt",
     "static/media/0.svg": "/r6-community-front-end/static/media/0.344141c8.svg",
     "static/media/1.svg": "/r6-community-front-end/static/media/1.682ff38d.svg",
     "static/media/10.svg": "/r6-community-front-end/static/media/10.a9ef776a.svg",
@@ -40,13 +40,14 @@
     "static/media/9.svg": "/r6-community-front-end/static/media/9.9f60a569.svg",
     "static/media/semantic.min.css": "/r6-community-front-end/static/media/outline-icons.ef60a4f6.woff",
     "static/media/empty-box.3d8bbcac.svg": "/r6-community-front-end/static/media/empty-box.3d8bbcac.svg",
-    "static/media/R6Register.css": "/r6-community-front-end/static/media/season18-he.bcdaa61d.jpg"
+    "static/media/season18-he.jpg": "/r6-community-front-end/static/media/season18-he.bcdaa61d.jpg",
+    "static/media/tack.png": "/r6-community-front-end/static/media/tack.2e713d77.png"
   },
   "entrypoints": [
     "static/js/runtime-main.9ad3bba7.js",
-    "static/css/2.f4dd663d.chunk.css",
-    "static/js/2.fdd0f617.chunk.js",
-    "static/css/main.f12184d5.chunk.css",
-    "static/js/main.feadf5b6.chunk.js"
+    "static/css/2.3f468aa5.chunk.css",
+    "static/js/2.141fb178.chunk.js",
+    "static/css/main.f7aef181.chunk.css",
+    "static/js/main.c9aef69e.chunk.js"
   ]
 }
