@@ -107,7 +107,7 @@ export default class LoginReactor extends Reactor<LoginAction, LoginState, Login
     }
     
     login(id : string, pwd: string){
-        return ajax.post(`http://www.r6-search.me/api/c/signin`, { password : pwd, username: id }, {
+        return ajax.post(`https://www.r6-search.me/api/c/signin`, { password : pwd, username: id }, {
             "Content-Type": "application/json"
         }).pipe( 
             map( value => ({type: "LOGINSUCCESS"} as LoginMutation)),

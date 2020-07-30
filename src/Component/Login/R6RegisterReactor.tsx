@@ -193,7 +193,7 @@ export default class R6RegisterReactor extends Reactor<RegisterAction, RegisterS
 
     registerRequest(id: string, pwd: string, pwd2: string, email: string) : Observable<RegisterMutation> {
 
-       return ajax.post('http://www.r6-search.me/api/c/signup', { password : pwd, username: id, password2: pwd2, email: email}, {
+       return ajax.post('https://www.r6-search.me/api/c/signup', { password : pwd, username: id, password2: pwd2, email: email}, {
         "Content-Type": "application/json"
        }).pipe(
             map( value => ({type: "SUCCESS"} as RegisterMutation)),

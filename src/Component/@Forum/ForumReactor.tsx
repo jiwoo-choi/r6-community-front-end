@@ -217,14 +217,14 @@ export default class ForumReactor extends Reactor<ForumAction, ForumState, Forum
    
     fetchList(topic: Topic, page: number = 1) : Observable<PostListType> {
 
-        return ajax.getJSON<PostListType>(`http://www.r6-search.me/api/c/topic/${topic}?page=${page}`)
+        return ajax.getJSON<PostListType>(`https://www.r6-search.me/api/c/topic/${topic}?page=${page}`)
         .pipe(
             catchErrorJustReturn({} as PostListType)
         )
     }
 
     fetchPost(postId: number) : Observable<ContentType> {
-        return ajax.getJSON<ContentType>(`http://www.r6-search.me/api/c/post/${postId}`).pipe( delay(10))
+        return ajax.getJSON<ContentType>(`https://www.r6-search.me/api/c/post/${postId}`).pipe( delay(10))
     }
 
  }
