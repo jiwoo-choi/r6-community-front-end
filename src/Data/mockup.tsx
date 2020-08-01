@@ -1,5 +1,5 @@
-import { CommentDataType } from "../Component/R6Comment";
-import { RANKBYREGION, ListType, ContentType } from "../Util/Entity";
+import { CommentDataType } from "../Component/@2Content/Contents/R6Comment";
+import { RANKBYREGION, ListType, ContentType, PostListType } from "../Util/Entity";
 
 export const commentMockup : CommentDataType[] = [
     {
@@ -73,9 +73,13 @@ export const rankbyregionMockup : RANKBYREGION[] =
 
 
 
-export const listResultMockup : ListType[] = 
-    [
-        {
+export const listResultMockup : PostListType = 
+{ 
+    meta: {
+        currentPage : 1,
+        totalPage: 10,
+     },
+     postList : [{
             "postId": 1,
             "recommendCnt": 0, // 추천 수
             "viewCnt": 2, // 
@@ -94,8 +98,63 @@ export const listResultMockup : ListType[] =
             "author": "test1",
             "hasImg": true,
             "notice": false
-        }
-    ]
+        },{
+            "postId": 2,
+            "recommendCnt": 0,
+            "viewCnt": 0,
+            "createdTime": "2020-01-01T00:00:00",
+            "title": "title1",
+            "author": "test1",
+            "hasImg": true,
+            "notice": false
+        },{
+            "postId": 2,
+            "recommendCnt": 0,
+            "viewCnt": 0,
+            "createdTime": "2020-01-01T00:00:00",
+            "title": "title1",
+            "author": "test1",
+            "hasImg": true,
+            "notice": false
+        },{
+            "postId": 2,
+            "recommendCnt": 0,
+            "viewCnt": 0,
+            "createdTime": "2020-01-01T00:00:00",
+            "title": "title1",
+            "author": "test1",
+            "hasImg": true,
+            "notice": false
+        },{
+            "postId": 2,
+            "recommendCnt": 0,
+            "viewCnt": 0,
+            "createdTime": "2020-01-01T00:00:00",
+            "title": "title1",
+            "author": "test1",
+            "hasImg": true,
+            "notice": false
+        },{
+            "postId": 2,
+            "recommendCnt": 0,
+            "viewCnt": 0,
+            "createdTime": "2020-01-01T00:00:00",
+            "title": "title1",
+            "author": "test1",
+            "hasImg": true,
+            "notice": false
+        },{
+            "postId": 2,
+            "recommendCnt": 0,
+            "viewCnt": 0,
+            "createdTime": "2020-01-01T00:00:00",
+            "title": "title1",
+            "author": "test1",
+            "hasImg": true,
+            "notice": false
+        }]
+    }
+    
 
 
 

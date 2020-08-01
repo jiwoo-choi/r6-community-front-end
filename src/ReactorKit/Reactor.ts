@@ -1,7 +1,8 @@
-import { Observable ,Subject, Scheduler, empty, queueScheduler, Subscription } from 'rxjs'
-import { flatMap, startWith, scan, catchError, shareReplay, tap,  observeOn, takeUntil, switchMap, distinctUntilChanged} from 'rxjs/operators'
+import { Observable ,Subject, Scheduler, empty, queueScheduler, Subscription, ConnectableObservable, merge, of } from 'rxjs'
+import { flatMap, startWith, scan, catchError, shareReplay, tap,  observeOn, takeUntil, switchMap, distinctUntilChanged, publishReplay, filter, share, map, multicast, refCount} from 'rxjs/operators'
 import { Stub } from './Stub';
 import { DisposeBag } from './DisposeBag';
+import { fireEvent } from '@testing-library/react';
 
 
 export type ReactorControlType<Action, State> = { dispatcher?: (action: Action) => (...args: any)=>void  , stateStream?: Observable<State>, getState?: ()=>State}
@@ -11,6 +12,9 @@ export abstract class Reactor<Action = {}, State = {}, Mutation = Action> {
     private dummyAction: Subject<any>;
     private _action : Subject<Action>;
     
+    private _inputMutation: Subject<Mutation>;
+    private _outputMutation: Subject<Mutation>;
+
     private _initialState! : State; 
     public currentState! : State; 
     private _state!: Observable<State>; 
@@ -38,15 +42,6 @@ export abstract class Reactor<Action = {}, State = {}, Mutation = Action> {
         return this._action;
     }
 
-    // get currentState(){
-    //     return this._currentState;
-    // }
-
-    // set currentState(newState: State){
-    //     this._currentState = newState;
-    // }
-
-
     getReactorControl(transformState?: Observable<State>) : ReactorControlType<Action, State>{
         if (transformState) {
             return { dispatcher: this.dispatchFn, stateStream: transformState, getState:this.getState}
@@ -57,9 +52,13 @@ export abstract class Reactor<Action = {}, State = {}, Mutation = Action> {
 
     constructor(initialState : State, isStubEnabled : boolean = false){
         
+        this._inputMutation = new Subject<Mutation>();
+        this._outputMutation = new Subject<Mutation>();
+
         this._isStubEnabled = isStubEnabled;
         this.dummyAction = new Subject<any>(); 
         this._initialState = initialState;
+
 
         if (this._isStubEnabled) {
             this._stub = new Stub(this);
@@ -69,6 +68,7 @@ export abstract class Reactor<Action = {}, State = {}, Mutation = Action> {
             this._action = new Subject<Action>();
             this._state = this.createStream();
         }
+
 
         this.dispatch = this.dispatch.bind(this);
         this.dispatchFn = this.dispatchFn.bind(this);
@@ -111,6 +111,25 @@ export abstract class Reactor<Action = {}, State = {}, Mutation = Action> {
         return state
     }
 
+    fireImmediately(filterPredicate: (value: Mutation) => boolean , doThis: (result: Mutation) => void) {
+        this._outputMutation.asObservable().pipe(
+            filter(filterPredicate)
+        )
+        .subscribe( res => doThis(res))
+    }
+
+    connect<R extends Reactor<A,S,M>, A,S,M>(filterPredicate: (value: Mutation) => boolean){
+        let self = this;
+        return function(reactor: R) {
+            return function(mapper: (value: Mutation) => M) {
+                self._outputMutation.pipe( 
+                    filter(filterPredicate),
+                    map(mapper),
+                ).subscribe( reactor._inputMutation )
+            }
+        }
+    }
+
     disposeOperator(){
         return takeUntil(this.dummyAction)
     }
@@ -143,10 +162,13 @@ export abstract class Reactor<Action = {}, State = {}, Mutation = Action> {
                 (action) => {
                     return this.mutate(action).pipe(catchError( err => empty()))
                 }
-            ) 
+            ),
+            share() // do you think I need to use share?
         )
 
-        let transformedMutation : Observable<Mutation> = this.transformMutation(mutation);
+        mutation.subscribe(this._outputMutation)
+        //proxy를 넣어주는것?
+        let transformedMutation : Observable<Mutation> = merge(this._inputMutation,this.transformMutation(mutation));
 
         let state = transformedMutation.pipe(
             scan((state, mutate) => {
@@ -155,23 +177,32 @@ export abstract class Reactor<Action = {}, State = {}, Mutation = Action> {
             catchError( () => {
                 return empty()
             })
-            ,startWith(this.initialState), 
+            ,startWith(this.initialState), //if it is binded. we don't have to have that 
         )
 
 
-        let transformedState : Observable<State> = this.transformState(state)
+        let transformedState  = this.transformState(state)
         .pipe(
             tap( (state) => {
                 this.currentState = state
             }),
-            shareReplay(1), 
-        )
+            publishReplay(1),
+            // refCount(),
+            // multicast(a),
+            // publishReplay(1),
+            // multicast(a),
+            // refCount()
+            // shareReplay({ refCount: true, bufferSize: 1 })
+            // publishReplay(1)
+            // shareReplay(1), 
+        ) as ConnectableObservable<any>
 
-        this.disposedBy = transformedState.subscribe();
-
+        this.disposedBy = transformedState.connect();
+        // this.disposedBy = transformedState.subscribe();
         return transformedState;
     }
 
+    
 }
 
 

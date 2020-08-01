@@ -1,12 +1,31 @@
-import React from 'react';
+import React, { Suspense, lazy} from 'react';
 import ReactDOM from 'react-dom';
 import 'semantic-ui-css/semantic.min.css'
 import './index.css';
-import App from './App';
+import Main from './Main';
 import * as serviceWorker from './serviceWorker';
 
+import {
+  BrowserRouter as Router,
+  Switch,
+  Route,
+  Link
+} from "react-router-dom";
+import GlobalLoading from './GlobalLoading';
+
+// works like global reactor.
+// consider using that
+
+
 ReactDOM.render(
-    <App />,
+  <>
+    <Router>
+      <Suspense fallback={ <div>loading...</div>}>
+        <Main/>
+      </Suspense>
+    </Router>
+  </>
+,
   document.getElementById('root')
 );
 

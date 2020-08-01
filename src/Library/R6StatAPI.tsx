@@ -41,14 +41,14 @@ export class R6StatAPI extends API {
 
     public constructor (config?: AxiosRequestConfig) {
         super(config);
-        moxios.install(this.api);
-        moxios.stubRequest(new RegExp("([0-9]|[a-z]).*"), {
-            status: 200,
-            responseText: JSON.stringify(listResultMockup)
-            // response: {
-            //     data: listResultMockup
-            // } 
-        })
+        // moxios.install(this.api);
+        // moxios.stubRequest(new RegExp("([0-9]|[a-z]).*"), {
+        //     status: 200,
+        //     responseText: JSON.stringify(listResultMockup)
+        //     // response: {
+        //     //     data: listResultMockup
+        //     // } 
+        // })
         // this middleware is been called right before the http request is made.
         // this.interceptors.request.use((param: AxiosRequestConfig) => ({
         //     ...param,

@@ -1,8 +1,6 @@
 import { PureComponent } from "react"
 import React from "react";
 import { Reactor } from "reactivex-redux";
-import { ForumReactor } from "../Component/@Forum";
-import { ForumStateInitialState, ForumState } from "../Component/@Forum/ForumReactor";
 import { observable } from "rxjs";
 
 
