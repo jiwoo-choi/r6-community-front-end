@@ -6,12 +6,14 @@ import R6RegisterReactor, { RegisterInitialState, RegisterState } from "./R6Regi
 import { filter , skip, distinctUntilChanged  } from "rxjs/operators";
 import _ from "lodash";
 import R6RegisterConfirmation from "./R6RegisterConfirmation";
+import Media from "react-media";
+import { withRouter, RouteComponentProps } from "react-router-dom";
 //#36393f
 //https://gist.github.com/barbiturat/49facf4eeec1e2a5352ff4fa6bbf7286
 //https://gist.github.com/barbiturat/49facf4eeec1e2a5352ff4fa6bbf7286
 // 김종민님 + 인프런 인터렉티브 웹<div className=""></div>
 
-class R6Register extends React.PureComponent<{}, RegisterState> {
+class R6Register extends React.PureComponent<RouteComponentProps, RegisterState> {
 
     reactor?: R6RegisterReactor | null;
 
@@ -31,8 +33,10 @@ class R6Register extends React.PureComponent<{}, RegisterState> {
     
     componentDidMount(){
 
+        // image scale change?
         
         if (this.reactor) {
+
             this.reactor.disposedBy = this.reactor?.state.pipe(
                 filter((value,index) => { return value.isSuccess !== true}),
                 distinctUntilChanged(_.isEqual),
@@ -76,22 +80,24 @@ class R6Register extends React.PureComponent<{}, RegisterState> {
                 className="register-content"   
                 initial={{ scale: 1.1, opacity:0.5, y:'-5%' }}
                 animate={{ scale: 1, opacity:1, y:'0%'}}
-                // transition={{
-                //     type: "spring",
-                //     stiffness: 260,
-                //     damping: 20
-                // }}>
                 >
 
                 { this.state.isSuccess ? <R6RegisterConfirmation/> 
                 :
                 (<React.Fragment>
-                    <Header className="header-center" size={"huge"}> 계정 만들기 </Header>
                     <Form error={this.state.isError}>
+                        <Media query={{ maxWidth: 599 }}>
+                            {matches =>
+                                matches ? (
+                                    <Header className="header-center" size={"medium"}> 계정 만들기 </Header>
+                                ) : (
+                                    <Header className="header-center" size={"huge"}> 계정 만들기 </Header>
+                                )
+                            }
+                        </Media>
                         <Message
                             error
-                            header={this.state.messageHeader}
-                            content={this.state.messageDesc}
+                            header={this.state.messageDesc}
                         />
                         <Form.Field required error={this.state.isIdError}>
                         <label>아이디</label>
@@ -124,7 +130,9 @@ class R6Register extends React.PureComponent<{}, RegisterState> {
                             })
                         }}>계속하기</Button>
 
-                    <div className="button-bottom-top"><a> 이미 계정이 있으신가요? </a> </div>
+                    <div className="button-bottom-top"><a onClick={()=>{
+                        this.props.history.goBack();
+                    }}> 이미 계정이 있으신가요? </a> </div>
                     <div> 등록하는 순간 R6-Community 서비스의 <a>이용 약관</a>과 <a>개인정보 보호 정책</a>에 동의하게 됩니다. </div>
                     </React.Fragment>
                 )}
@@ -139,4 +147,4 @@ class R6Register extends React.PureComponent<{}, RegisterState> {
     }
 }
 
-export default R6Register
+export default withRouter(R6Register)

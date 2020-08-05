@@ -80,6 +80,7 @@ export const listResultMockup : PostListType =
         totalPage: 10,
      },
      postList : [{
+            "commentCnt" : 0,
             "postId": 1,
             "recommendCnt": 0, // 추천 수
             "viewCnt": 2, // 
@@ -88,70 +89,6 @@ export const listResultMockup : PostListType =
             "author": "test1", // 글쓴 아이디
             "hasImg": true, // 이미지가 존재하는지
             "notice": true // 글이 공지사항인지
-        },
-        {
-            "postId": 2,
-            "recommendCnt": 0,
-            "viewCnt": 0,
-            "createdTime": "2020-01-01T00:00:00",
-            "title": "title1",
-            "author": "test1",
-            "hasImg": true,
-            "notice": false
-        },{
-            "postId": 2,
-            "recommendCnt": 0,
-            "viewCnt": 0,
-            "createdTime": "2020-01-01T00:00:00",
-            "title": "title1",
-            "author": "test1",
-            "hasImg": true,
-            "notice": false
-        },{
-            "postId": 2,
-            "recommendCnt": 0,
-            "viewCnt": 0,
-            "createdTime": "2020-01-01T00:00:00",
-            "title": "title1",
-            "author": "test1",
-            "hasImg": true,
-            "notice": false
-        },{
-            "postId": 2,
-            "recommendCnt": 0,
-            "viewCnt": 0,
-            "createdTime": "2020-01-01T00:00:00",
-            "title": "title1",
-            "author": "test1",
-            "hasImg": true,
-            "notice": false
-        },{
-            "postId": 2,
-            "recommendCnt": 0,
-            "viewCnt": 0,
-            "createdTime": "2020-01-01T00:00:00",
-            "title": "title1",
-            "author": "test1",
-            "hasImg": true,
-            "notice": false
-        },{
-            "postId": 2,
-            "recommendCnt": 0,
-            "viewCnt": 0,
-            "createdTime": "2020-01-01T00:00:00",
-            "title": "title1",
-            "author": "test1",
-            "hasImg": true,
-            "notice": false
-        },{
-            "postId": 2,
-            "recommendCnt": 0,
-            "viewCnt": 0,
-            "createdTime": "2020-01-01T00:00:00",
-            "title": "title1",
-            "author": "test1",
-            "hasImg": true,
-            "notice": false
         }]
     }
     

@@ -20,17 +20,22 @@ export default class R6Ajax {
         return R6Ajax.instance;
     }
 
-    accessToken? : string;
+    accessToken? : string = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0LWFjY291bnQiLCJpYXQiOjE1OTY1ODk2ODIsImV4cCI6MTU5NjY3NjA4Mn0.ETUR_vF_LDuPk4opbrAqs5EcV8oiYVp7gqOZO0AnKHI"
     baseUrl = "http://r6-search.me"
     baseURLWithAPIVersion = this.baseUrl + "/api/c/" 
 
     id?: string;
     pwd?: string;
 
-    signIn(id: string, pwd: string) {
+    /**
+     * 세가지경우.
+     * id, pwd가 메모리에 있는경우.
+     * id, pwd가 메모리에 없는 경우. accessToken
+     * accessToken이 없는경우, refresh Token 요청.
+     */
+
+    signIn(id: string, pwd: string) : Observable<string> {
         const {href} = new URL(`/signin`, this.baseURLWithAPIVersion);
-        //if it is failed?
-        //catchError? how?
         return ajax.post(href, { password : pwd, username: id }, {
             "Content-Type": "application/json"
         }).pipe( map( value => {
@@ -41,42 +46,59 @@ export default class R6Ajax {
         }))
     }
 
-    post(url: string, body? : any, headers?: Object | "json" | "accessToken") : Observable<AjaxResponse> {
-        const {href} = new URL(url, this.baseURLWithAPIVersion);
-        //accessToken
-        console.log("abc")
-        return ajax.post(href, body, this.getHeader(headers))
-        // if there is no accesstoken -> do update call..
-        //access -> update JSON.
-        // try to access -> 403 fail -> access token update...
-    }
+    /** updateAccessToken */
 
-    getJson<T>(url: string, headers?: Object | "json" | "accessToken"): Observable<T> {
-        const {href} = new URL(url, this.baseUrl);
-        return ajax.getJSON(href, this.getHeader(headers))
-    }
-
-    
-    getJsonWithAuthorization<T>(url: string, headers: Object ){
-        // return ajax.getJSON<T>()
-        // if this is not valid try to update access token.
-    }
-
-    getAccessToken(id: string, pwd: string): Observable<string>{
+    updateAccessToken(id: string, pwd: string): Observable<string>{
+        //refreshtoke으로 다시요청한다. (id, pwd는 저장하지않는다...)
         const {href} = new URL(`/signin`, this.baseUrl);
         return ajax.post(href, { password : pwd, username: id }, {
             "Content-Type": "application/json"
         }).pipe( map( value => value.response.jwtToken ))
     }
 
-    //updateAccesToken
 
-    getHeader(headers?: Object | "json" | "accessToken") {
-        if (this.accessToken) {
-            return {"Authorization" : `Bearer ${this.accessToken}`, "Content-Type": "application/json"}
+    /** Wrapper */
+    post(url: string, body? : any | HTMLFormElement, headers?:Object | "json" | "multipart", withAccessToken: boolean = false) : Observable<AjaxResponse> {
+        const {href} = new URL(url, this.baseURLWithAPIVersion);
+        //accessToken
+        //image to binary file => 
+        return ajax.post(href, body, this.getHeader(headers, withAccessToken))
+        // if there is no accesstoken -> do update call..
+        //access -> update JSON.
+        // try to access -> 403 fail -> access token update...
+    }
+
+    getJson<T>(url: string, headers?: Object | "json" | "multipart") : Observable<T> {
+        const {href} = new URL(url, this.baseURLWithAPIVersion);
+        return ajax.getJSON(href, this.getHeader(headers, false))
+    }
+
+
+    // Helper
+    getHeader(headers: Object | "json" | "multipart" | undefined , withAccessToken: boolean) {
+        let header = {} as any;
+        switch( headers ){
+            case "json":
+                header = {"Content-Type": "application/json"}
+                break;
+            case "multipart":
+                // header = {"Content-Type": "multipart/form-data"}
+                break;
+            default:
+                if (headers) {
+                } else {
+                    header = headers
+                }
+        }
+        
+        if (this.accessToken && withAccessToken) {
+            header["Authorization"] = `Bearer ${this.accessToken}`
+            return header
         } else {
-            return {"Content-Type": "application/json"}
+            return header
         }
     }
+
+
 
 }

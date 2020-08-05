@@ -2,10 +2,11 @@ import { Observable , concat, of  } from "rxjs";
 import { ajax } from "rxjs/ajax";
 
 import { takeUntil, map,  filter, tap  } from "rxjs/operators";
-import { ListType, ContentType, PostListType } from "../../Util/Entity";
+import { ListType, ContentType, PostListType, CommentType } from "../../Util/Entity";
 import { catchErrorJustReturn } from "../../Library/RxJsExtension";
 import { Reactor, ReactorControlProps,  ReactorControlType } from "reactivex-redux";
 import { listResultMockup } from "../../Data/mockup";
+import R6Ajax from "../../Library/R6Ajax";
 
 export function TopicToString( topicType: Topic) {
     switch(topicType) {
@@ -23,17 +24,35 @@ export function TopicToString( topicType: Topic) {
 export type Topic = "tips"|"free"| "together"| "clan"
 type Mode = "list" | "edit" | "view"
 
-export const CLICKTOPIC = "CLICKTOPIC" as const
+export const SETTOPIC = "SETTOPIC" as const
+export const SETPAGENO = "SETPAGENO" as const
+
+export const TOPICLISTREQUSET = "TOPICLISTREQUSET" as const
+export const CLICKPOST = "CLICKPOST" as const 
+
+
 export const CLICKWRITE = "CLICKWRITE" as const
 export const CLICKPAGE = "CLICKPAGE" as const
-export const CLICKPOST = "CLICKPOST" as const 
 export const CLICKBACK = "CLICKBACK" as const
+export const CLICKLOGINOFFBUTTON = "CLICKLOGINOFFBUTTON" as const
+export const CLICKLOGINBUTTON = "CLICKLOGINBUTTON" as const
 
 
-export interface CLICKTOPIC {
-    type: typeof CLICKTOPIC;
+export interface SETTOPIC {
+    type: typeof SETTOPIC;
     newTopic: Topic,
 }
+
+export interface SETPAGENO {
+    type: typeof SETPAGENO;
+    pageId: number,
+}
+
+export interface TOPICLISTREQUSET {
+    type: typeof TOPICLISTREQUSET;
+    newTopic: Topic,
+}
+
 export interface CLICKWRITE {
     type: typeof CLICKWRITE;
 }
@@ -41,16 +60,23 @@ export interface CLICKPAGE {
     type: typeof CLICKPAGE;
     newPage: number,
 }
+
 export interface CLICKPOST {
     type: typeof CLICKPOST;
     postId: number,
 }
-
 export interface CLICKBACK {
     type: typeof CLICKBACK;
 }
 
-export type ForumAction = CLICKTOPIC | CLICKWRITE | CLICKPAGE | CLICKPOST | CLICKBACK 
+export interface CLICKLOGINBUTTON {
+    type: typeof CLICKLOGINBUTTON;
+}
+export interface CLICKLOGINOFFBUTTON {
+    type: typeof CLICKLOGINOFFBUTTON;
+}
+
+export type ForumAction = SETTOPIC | SETPAGENO | CLICKWRITE | CLICKPAGE | CLICKBACK | CLICKLOGINBUTTON | CLICKLOGINOFFBUTTON | TOPICLISTREQUSET | CLICKPOST
 
 
 export const SETLOADING = "SETLOADING"
@@ -58,6 +84,10 @@ export const FETCHLIST = "FETCHLIST"
 export const FETCHPOST = "FETCHPOST"
 export const MODECHANGE = "MODECHANGE"
 export const TOPICCHANGE = "TOPICCHANGE"
+export const PAGENOCHANGE = "PAGENOCHANGE"
+
+export const LOGINMODALSTATE = "LOGINMODALSTATE"
+
 
 // 상태에 대한 힌트.
 export interface SETLOADING {
@@ -70,6 +100,7 @@ export interface FETCHLIST {
     list: ListType[],
     page: number
 }
+
 export interface FETCHPOST {
     type: typeof FETCHPOST,
     post: ContentType,
@@ -83,9 +114,21 @@ export interface MODECHANGE {
 export interface TOPICCHANGE {
     type: typeof TOPICCHANGE,
     topic: Topic,
+} 
+
+export interface PAGENOCHANGE {
+    type: typeof PAGENOCHANGE,
+    pageId: number,
+} 
+
+
+
+export interface LOGINMODALSTATE {
+    type: typeof LOGINMODALSTATE,
+    on: boolean;
 }
 
-type ForumMutation = SETLOADING | FETCHLIST | FETCHPOST | MODECHANGE | TOPICCHANGE 
+type ForumMutation = SETLOADING | FETCHLIST | FETCHPOST | MODECHANGE | TOPICCHANGE | LOGINMODALSTATE | PAGENOCHANGE
 // --- state
 
 export interface ForumState {
@@ -96,7 +139,9 @@ export interface ForumState {
     isLoading:boolean,
     isError:boolean,
     post?: ContentType,
+    postId: number,
     isLogined: boolean,
+    isLoginModal: boolean;
 }
 
 export const ForumStateInitialState : ForumState = {
@@ -106,7 +151,9 @@ export const ForumStateInitialState : ForumState = {
     mode:"list",
     topic:"free",
     post: undefined,
+    postId: 0,
     list:[],
+    isLoginModal: false,
     isLogined: false,
 }
 
@@ -114,35 +161,32 @@ export interface ForumReactorProps extends ReactorControlProps<ForumAction, Foru
     reactor_control: ReactorControlType<ForumAction, ForumState>;
 } ;
 
+export interface ForumReactorProp {
+    reactor : ForumReactor;
+}
 
 export default class ForumReactor extends Reactor<ForumAction, ForumState, ForumMutation> {
 
     mutate(action: ForumAction): Observable<ForumMutation> {
         switch(action.type) {
-            case "CLICKTOPIC":
-                return concat(
-                    //topic change
-                    of<ForumMutation>({type:"TOPICCHANGE", topic: action.newTopic}),
-                    of<MODECHANGE>({type:"MODECHANGE", mode: "list"}),
-                    //is Loading
-                    of<ForumMutation>({type:"SETLOADING", isLoading: true}),
-                    //WebRequest
-                    this.fetchList(action.newTopic).pipe(
-                        // takeUntil(of(1)),
-                        takeUntil(this.action.pipe(filter((value)=> {
-                            return value.type === action.type
-                        }))),
-                        map<PostListType, ForumMutation>( res => {
-                            return {type:"FETCHLIST", list: res.postList, page: 1 } 
-                        }),
-                    ),
-                    // of<ForumMutation>({type:"SETLOADING", isLoading: false}).pipe( tap (value => console.log("VALUE OUT")))
+        
+        case "SETTOPIC":
+            return of<ForumMutation>({type:"TOPICCHANGE", topic: action.newTopic})
+        
+        case "SETPAGENO":
+            return of<ForumMutation>({type:"PAGENOCHANGE", pageId: action.pageId})
 
-                    // of<ForumMutation>({type:"FETCHLIST", isLoading: true}),
-                    //is Loading
-                    // of<ForumMutation>({type:"SETLOADING", isLoading: false})
-                        //결과값 전달=> 결과값이 다르지않으면 그대로전달.
-                )
+        case "TOPICLISTREQUSET":
+            return concat( 
+                of<ForumMutation>({type:"SETLOADING", isLoading: true}),
+                this.fetchList(action.newTopic).pipe(
+                    takeUntil(this.action.pipe(filter((value)=> {
+                        return value.type === action.type
+                    }))),
+                    map<PostListType, ForumMutation>( res => {
+                        return {type:"FETCHLIST", list: res.postList, page: 1 } 
+                    }),
+                ))
 
         case "CLICKBACK":
             return of<MODECHANGE>({type:"MODECHANGE", mode: "list"})
@@ -166,29 +210,34 @@ export default class ForumReactor extends Reactor<ForumAction, ForumState, Forum
 
         case "CLICKPOST":
             return concat(
-            of<MODECHANGE>({type: "MODECHANGE", mode:"view"}),
             of<ForumMutation>({type:"SETLOADING", isLoading: true}),
-            //WebRequest
             this.fetchPost(action.postId).pipe(
-                tap( value => console.log(value)),
-                // takeUntil(this.action.pipe(filter(value => value === action))),
                 map<ContentType, ForumMutation>( res => ({type:"FETCHPOST", post : res}))
             ),
-            // of<ForumMutation>({type:"FETCHLIST", isLoading: true}),
-            //is Loading
-            of<ForumMutation>({type:"SETLOADING", isLoading: false}),
             )
+
+        case "CLICKLOGINBUTTON":
+            return of<ForumMutation>({type:"LOGINMODALSTATE", on: true})
+
+        case "CLICKLOGINOFFBUTTON":
+            return of<ForumMutation>({type:"LOGINMODALSTATE", on: false})
         }
-        
+
     }
 
     reduce(state: ForumState, mutation: ForumMutation): ForumState {
 
         let newState = state;
         switch(mutation.type) {
+
             case "TOPICCHANGE":
-                newState.topic = mutation.topic
+                newState.topic = mutation.topic;
                 return newState;
+
+            case "PAGENOCHANGE":
+                newState.postId = mutation.pageId;
+                return newState;
+
             case "MODECHANGE":
                 newState.mode = mutation.mode
                 return newState;
@@ -210,49 +259,32 @@ export default class ForumReactor extends Reactor<ForumAction, ForumState, Forum
                     return newState;
                 } else {
                     newState.post = mutation.post;
+                    newState.isLoading = false;
                     return newState;
                 }
+            case "LOGINMODALSTATE":
+                newState.isLoginModal = mutation.on;
+                return newState;
         }
     }
    
     fetchList(topic: Topic, page: number = 1) : Observable<PostListType> {
-
         return ajax.getJSON<PostListType>(`https://www.r6-search.me/api/c/topic/${topic}?page=${page}`)
-        .pipe(
-            catchErrorJustReturn( listResultMockup as PostListType)
-        )
     }
 
     fetchPost(postId: number) : Observable<ContentType> {
         return ajax.getJSON<ContentType>(`https://www.r6-search.me/api/c/post/${postId}`)
-        .pipe(
-            catchErrorJustReturn({
-                "postId": 33,
-                "author": "test-account",
-                "title": "수정된 제목입니다",
-                "content": "수정된 내용입니다",
-                "viewCnt": 7,
-                "recommendCnt": 0,
-                "commentList": [
-                    {
-                        "commentId": 7,
-                        "username": "test-account",
-                        "content": "수정덧글",
-                        "childComment": [],
-                        "createdTime": "2020-08-01T03:20:48"
-                    },
-                    {
-                        "commentId": 8,
-                        "username": "test-account",
-                        "content": "테스트 덧글입니다",
-                        "childComment": [],
-                        "createdTime": "2020-08-01T03:25:19"
-                    }
-                ],
-                "createdTime": "2020-08-01T03:08:23",
-                "recommend": false
-            } as ContentType)
-        )
     }
+
+    postUpload(title: string, content:string, type: Topic) {
+        // let formData = new FormData();
+        // formData.append('title', title);
+        // formData.append('content', content);
+        // formData.append('type', type);
+        // return R6Ajax.shared.post(`/post`, formData, "multipart", true)
+        // .map( res => ({type:""}))
+    }
+
+    // fetchPost(postId: number) : 
 
  }

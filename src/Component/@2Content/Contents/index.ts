@@ -7,10 +7,6 @@ export {
 } from './List/R6Cell'
 
 export {
-    default as R6ListFooter,
-} from './ListFooter/R6ListFooter'
-
-export {
     R6Post,
     R6IDSearchReactor,
     R6IDSearch,

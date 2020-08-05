@@ -22,7 +22,6 @@ export default class ReactorGroup extends React.PureComponent<ReactorControlType
             <>
                 {
                     map( this.props.children, (child, index, total) => {
-                        // console.log(child.type)
                         return React.cloneElement( child , {
                             ...this.props,
                             ...child.props,

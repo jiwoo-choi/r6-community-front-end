@@ -15,8 +15,12 @@ import {
   Route,
   Link,
   RouteComponentProps,
-  withRouter
+  withRouter,
+  Redirect,
 } from "react-router-dom";
+
+import { createPortal } from "react-dom";
+
 
 import Page404 from './Component/@2Content/Page404/Page404';
 import { ForumReactor } from './Component/@0ForumReactor';
@@ -24,9 +28,13 @@ import { ForumStateInitialState, Topic } from './Component/@0ForumReactor/ForumR
 import { values } from 'lodash';
 import { deepDistinctUntilChanged } from 'jsreactorkit';
 import { skip } from 'rxjs/operators';
+import { Divider } from 'semantic-ui-react';
+import { R6Login, R6Register } from './Component/@2Content/Login';
+import R6Ajax from './Library/R6Ajax';
 
 const ListComponent = lazy( () => import('./Component/@2Content/Contents/List/R6List'))
-const PostComponent = lazy( () =>  import('./Component/@2Content/Contents/List/R6List'))
+const EditorComponent = lazy( () =>  import('./Component/@2Content/Contents/Post/Edit/R6PostWrite'))
+const PostComponent = lazy( () =>  import('./Component/@2Content/Contents/Post/View/R6Post'))
 
 const SECTIONWRAPPER = styled.div`
   min-height:90vh;
@@ -44,116 +52,95 @@ const PADDER = styled.div`
 
 
 
-class Main extends React.PureComponent<RouteComponentProps, { currentTopic: Topic }> {
+class Main extends React.PureComponent<RouteComponentProps> {
 
   reactor: ForumReactor;
   reactorControl: any;
+  newTopic: Topic;
 
   constructor(props:RouteComponentProps){
+
     super(props);
+
+    let regexp = new RegExp(`\/[a-z]{1,}|\/`);
+    let pathname = this.props.location.pathname;
+    let progressed = regexp.exec(pathname);
+    let excuted = progressed ? progressed[0] : "/null";
+
+
+    if (pathname === "/") {
+      ForumStateInitialState.topic = "free" as Topic
+    } else if ( !["free", "clan", "together", "tips"].includes(excuted.substr(1))) {
+      this.props.history.push('/error/404');
+    } else {
+      ForumStateInitialState.topic = excuted.substr(1) as Topic
+    }
+
+    const splittedPathname = this.props.location.pathname.split('/');
+
+    if (splittedPathname.length === 4) {
+      if (splittedPathname[2] === "post") {
+        ForumStateInitialState.mode = "view"
+        ForumStateInitialState.postId = parseInt(splittedPathname[3]);
+      }
+    }
+
+
+    if (splittedPathname.length === 3) {
+      if (splittedPathname[2] === "editor") {
+        ForumStateInitialState.mode = "edit"
+      }
+    }
+
+    this.newTopic = ForumStateInitialState.topic;
     this.reactor = new ForumReactor(ForumStateInitialState);
     this.reactorControl = this.reactor.getReactorControl();
-    this.state = { currentTopic: ForumStateInitialState.topic }
-  }
 
+  }
 
   componentDidMount(){
-    //hot observable만들기?
-    //변경한다? this props
-    this.reactor.dispatch({type:"CLICKTOPIC", newTopic:"free"})
-    
-    // this.reactor.fireImmediately(
-    //   (value) => { return value.type === "TOPICCHANGE"}, 
-    //   (result) => {
-    //     if (result.type === "TOPICCHANGE") {
-    //       this.setState({currentTopic: result.topic}, () => {
-    //         this.props.history.push(`/${result.topic}`)
-    //       })
-    //     }
-    //   })
-
-
+    // this.reactor.dispatch({type:"CLICKTOPIC", newTopic:this.newTopic})
   }
+
+  /** url정리 및 PRomps기능
+   * https://reactrouter.com/web/example/query-parameters
+   */
 
   render(){
     return(
       <React.Fragment>
-         <R6Navigation reactor_control={this.reactorControl}></R6Navigation>
+
+         <R6Navigation reactor={this.reactor}></R6Navigation>
+         <R6Login reactor_control={this.reactorControl}></R6Login>
+
          <PADDER>
           <Switch>
-              <Route path={["/", "/free"]} exact key="free">
-                <ListComponent reactor_control={this.reactorControl}/>
+
+              <Route path={["/","/:type"]}  exact >
+                <ListComponent reactor={this.reactor}/>
               </Route>
 
-              <Route path="/tips" exact>
-                <ListComponent reactor_control={this.reactorControl}/>
+              <Route path="/:style/post/:postid">
+                <PostComponent reactor={this.reactor}/>
               </Route>
 
-              <Route path="/together" exact>
-                <ListComponent reactor_control={this.reactorControl}/>
+              <Route path="/:style/editor">
+                <EditorComponent reactor={this.reactor}/>
               </Route>
-
-              <Route path="/clan" exact>
-                <ListComponent reactor_control={this.reactorControl}/>
-              </Route>
-
-              <Route>
+              
+              <Route path="*">
                 <Page404></Page404>
               </Route>
-        </Switch>
-       </PADDER>
+
+              <Route path="/error/404">
+                <Page404></Page404>
+              </Route>
+          </Switch>
+        </PADDER>
      </React.Fragment>
    );
-    
   }
-    
-
 }
 
 export default withRouter(Main);
-//const reactor = new ForumReactor(ForumStateInitialState)
-//const reactorControls = reactor.getReactorControl();
-
-
-// <Router>
-// 
-//   <Switch>
-//     <App></App>
-//         {/* <Route path="/" exact component={Landing}/>
-//         <Route path="/login" exact component={Login}/>
-//         <Route path="/signup" exact component={SignUp}/>
-//         <Route path="/signup/result" exact component={SignUpResult}/>
-//         <Route path="/search/:searchTerm" component={Search}/> */}
-//         {/* <Route component={createErrorPageComponent('antd', 404)}></Route> */}
-//         {/* <App /> */}
-//   </Switch>
-// </Router>
-
-// <div className="App">
-// {/* <R6Navigation></R6Navigation>
-//     <SECTIONWRAPPER>
-//       <R6Forum></R6Forum>
-//     </SECTIONWRAPPER>
-//     <R6Login stater={registerSetter}></R6Login>
-//   <R6Footer></R6Footer> */}
-//   {/* <R6Login loginStater={loginSetter} stater={registerSetter}></R6Login> */}
-//   {/* <R6Register stater={registerSetter}></R6Register> */}
-//   {/* <R6Confirmation></R6Confirmation> */}
-//   {/* <R6Confirmation></R6Confirmation> */}
-// { registerState === 0 && 
-//   <>
-//     <R6Navigation stater={loginSetter}></R6Navigation>
-//     <SECTIONWRAPPER>
-//       <R6Forum></R6Forum>
-//     </SECTIONWRAPPER>
-//     { loginState && 
-//       <R6Login loginStater={loginSetter} stater={registerSetter}></R6Login>
-//     } 
-//     <R6Footer></R6Footer>
-//   </>
-// } 
-// { registerState === 1 &&
-//   <R6Register stater={registerSetter}></R6Register>
-// }
-// </div>
 

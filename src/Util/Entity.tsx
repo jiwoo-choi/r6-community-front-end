@@ -63,6 +63,7 @@ export interface ListType {
      author:string;
      hasImg:boolean;
      notice:boolean;
+     commentCnt: number;
 }
 
 

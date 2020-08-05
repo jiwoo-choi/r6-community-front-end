@@ -28,10 +28,6 @@ P = {}, // original props
             this.state = { updatar : 1 }
         }
 
-        // shouldComponentUpdate(nextProps: Readonly<P>, nextState: Readonly<any>, nextContext: any){
-        //     // console.log("CALLED!");
-        //     // return false
-        // }
 
         UNSAFE_componentWillMount(){       
 

@@ -1,7 +1,7 @@
 import React from "react";
 import './R6IDSearch.css'
 import {  Subject, } from "rxjs";
-import { debounceTime, map, tap, distinctUntilChanged } from "rxjs/operators";
+import { debounceTime, map, tap, distinctUntilChanged, skip } from "rxjs/operators";
 import {  deepDistinctUntilChanged } from "reactivex-redux";
 import R6IDSearchReactor, { R6SearchinitialState, SearchState, SearchAction } from "./R6IDSearchReactor";
 import { isError } from "lodash";
@@ -69,6 +69,61 @@ class R6IDSearch extends React.PureComponent<{}, SearchState> {
             debounceTime(500),
             map( value => ({type:"INVIS_SEARCHLIST", text: value } as SearchAction ))
         ).subscribe(this.reactor?.action)
+    }
+
+    componentDidMount(){
+
+        this.reactor?.fetchID("piliot").subscribe(res => console.log(res));
+
+        this.reactor?.state.pipe(
+            map((value) => value.isLoading ),
+            deepDistinctUntilChanged(),
+            skip(1),
+        ).subscribe(
+            isLoading => this.setState({isLoading})
+        )
+
+        this.reactor?.state.pipe(
+            map((value) => value.result ),
+            deepDistinctUntilChanged(),
+            skip(1),
+        ).subscribe(
+            result => this.setState({result})
+        )
+
+        this.reactor?.state.pipe(
+            map((value) => value.isError ),
+            deepDistinctUntilChanged(),
+            skip(1),
+        ).subscribe(
+            isError => this.setState({isError})
+        )
+
+        this.reactor?.state.pipe(
+            map((value) => value.isActive ),
+            deepDistinctUntilChanged(),
+            skip(1),
+        ).subscribe(
+            isActive => this.setState({isActive})
+        )
+
+        this.reactor?.state.pipe(
+            map((value) => value.value ),
+            deepDistinctUntilChanged(),
+            skip(1),
+        ).subscribe(
+            value => this.setState({value})
+        )
+
+        this.reactor?.state.pipe(
+            map((value) => value.resultQuery ),
+            deepDistinctUntilChanged(),
+            skip(1),
+        ).subscribe(
+            resultQuery => this.setState({resultQuery})
+        )
+
+
     }
 
     getCell(list : RANKBYREGION[][]) {   
@@ -184,7 +239,7 @@ class R6IDSearch extends React.PureComponent<{}, SearchState> {
                             { isActive && 
                                 <div className="cellContainer">
                                     {
-                                        this.getList([], value, isLoading, resultQuery)
+                                        this.getList(result, value, isLoading, resultQuery)
                                     }
                                 </div> 
                             } 

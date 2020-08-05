@@ -10,8 +10,11 @@ import styled from 'styled-components'
 
 // import R6IDSearch from './IDSearch/R6IDSearch'
 import { RANKAPI } from '../../../../../Util/Entity';
-import ForumReactor, { ForumReactorProps } from "../../../../@0ForumReactor/ForumReactor";
+import ForumReactor, { ForumReactorProps, ForumReactorProp } from "../../../../@0ForumReactor/ForumReactor";
 import R6IDSearch from './R6IDSearch/R6IDSearch';
+import { RouteComponentProps, withRouter } from 'react-router-dom';
+import { interval } from 'rxjs';
+import R6Ajax from '../../../../../Library/R6Ajax';
 
 const FLUIDDIV = styled.div`
     width:100%;
@@ -31,8 +34,13 @@ const CONTAINER = styled.div`
     flex-direction:column;
     align-items:flex-start;
     width:100%;
- 
 `
+
+const EDITORAREA = styled.div`
+    font-size:1.2rem;
+`
+
+
 // & ${FLUIDDIV} + ${FLUIDDIV} {
 //     margin-bottom:20px;
 // }
@@ -43,7 +51,7 @@ interface Props {
     onCancel?: () => void;
 }
 
-class R6Editor extends React.Component<Props & ForumReactorProps>{
+class R6Editor extends React.Component<Props & ForumReactorProp & RouteComponentProps>{
 
     private editorRef  = React.createRef<Editor>();
     reactor? : R6EditorReactor;
@@ -51,17 +59,85 @@ class R6Editor extends React.Component<Props & ForumReactorProps>{
     componentWillMount(){
         this.reactor = new R6EditorReactor(EditorinitialState)
     }
-
+    
+    
     componentDidMount(){
-        //this.current
-        // this.props.reactor?.state.pipe(
-        //     map( value => value.data),
-        //     // deepDistinctUntilChanged(),
-        // ).subscribe(
-        //     res=> console.log(res)
-        //     // res => this.insertTable(data, )
+
+        // const toBase64 = (file: any) => new Promise((resolve, reject) => {
+        //     const reader = new FileReader();
+        //     reader.readAsDataURL(file);
+        //     reader.onload = () => resolve(reader.result);
+        //     reader.onerror = error => reject(error);
+        // });
+
+        // interval(1000).subscribe(
+        //     // res=>console.log(this.editorRef.current?.getInstance().getHtml())
         // )
+
+        // this.getInstanceofEditor()?.addHook('addImageBlobHook', ( a,b) => {
+        //     // const reader = new FileReader();
+        //     // const h = reader.readAsDataURL(a);
+        //     // console.log(h);
+        //     var formData = new FormData();
+        //     formData.append('files', a);
+        //     formData.append('content', "안녕");
+        //     formData.append('type', "free");
+        //     formData.append('title', "이미지테스트다");
+        //     R6Ajax.shared.post('post', formData, "multipart", true).subscribe();
+
+        //     // let formData = new FormData();
+        //     // formData.append('image', a);
+        //     // console.log(formData);
+        // })
+
+        // this.reactor?.dispatch({type:"CLICKREGISTERBUTTON", })
     }
+
+    onAddImageBlob(blob: any, callback: any) {
+        //insert blob..
+        //and set data...
+        // console.log(blob);
+        // this.uploadImage(blob);
+        // this.editorRef.current?.getInstance().setHtml(
+        //     `<img src= ${blob} >`
+        // )
+        //image insert
+        //then we can add something..?
+
+        // callback("https://miro.medium.com/max/1400/1*PIuIAKbuu-QaoAvVk02PiQ.gif", 'alt text');
+        // uploadImage(blob)
+        //     .then(response => {
+        //         if (!response.success) {
+        //             throw new Error('Validation error');
+        //         }
+    
+        //         callback(response.data.url, 'alt text');
+        //     }).catch(error => {
+        //         console.log(error);
+        //     });
+    };
+    
+
+    uploadImage(blob: any) {
+        
+        let formData = new FormData();
+        // file in a 'multipart/form-data' request
+        // formData.append(0, blob, blob.name);
+        // console.log(formData);
+        // data uri
+
+        // return fetch('/upload/image', {
+        //     method: 'POST',
+        //     body: formData
+        // }).then(response => {
+        //     if (response.ok) {
+        //         return response.json();
+        //     }
+    
+        //     throw new Error('Server or network error');
+        // });
+        //https://junwoo45.github.io/2020-07-28-chrome_devtools/?fbclid=IwAR2JRCQRpluIn6JmN2mne55mUASDLWxWVxoj3L2beX2a7CPQmjddOIldrS4
+    };
 
     
     private getInstanceofEditor() {
@@ -73,7 +149,6 @@ class R6Editor extends React.Component<Props & ForumReactorProps>{
     }
 
     private insertTable(data: RANKAPI, platform: string, id: string){
-        
         const WD = (data.wins+data.losses > 0) ? Math.floor((data.wins/(data.wins+data.losses))*100) : 0
         const KD = (data.kills+data.death > 0) ? Math.floor((data.kills/(data.kills+data.death))*100) : 0
         const current = this.getHtml();
@@ -132,10 +207,11 @@ class R6Editor extends React.Component<Props & ForumReactorProps>{
 
     render(){
        
-            const parentReactor = this.props.reactor_control!.getState();
+            const parentReactor = this.props.reactor;
             const localReactor = this.reactor;
-            const { topic } = parentReactor;
+            const { topic } = parentReactor.getState();
 
+                    
             return(
 
                 <CONTAINER>       
@@ -154,17 +230,19 @@ class R6Editor extends React.Component<Props & ForumReactorProps>{
                 </FLUIDDIV>
 
                 <FLUIDDIV>
-                    <Editor 
-                        height={"600px"}
-                        initialEditType={"wysiwyg"}
-                        ref={this.editorRef}
-                    />
+                    <EDITORAREA>
+                        <Editor 
+                            height={"600px"}
+                            initialEditType={"wysiwyg"}
+                            ref={this.editorRef}
+                        />
+                    </EDITORAREA>
                 </FLUIDDIV>
     
                 <FLUIDDIV>
                     <BUTTONGROUP>
-                        <Button size={"big"} onClick={this.props.reactor_control?.dispatcher!({type:"CLICKBACK"})}> 취소하기 </Button>
-                        <Button size={"big"} positive> 등록하기 </Button>
+                        <Button size={"big"} onClick={()=> {this.props.history.goBack()}}> 취소하기 </Button>
+                        <Button size={"big"} positive onClick={()=>{ console.log(this.getHtml())}}> 등록하기 </Button>
                     </BUTTONGROUP>
                 </FLUIDDIV>
             </CONTAINER>
@@ -174,4 +252,4 @@ class R6Editor extends React.Component<Props & ForumReactorProps>{
     
 }
 
-export default R6Editor
+export default withRouter(R6Editor)

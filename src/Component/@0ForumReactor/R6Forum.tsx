@@ -24,13 +24,14 @@ export class R6Forum extends React.Component {
 
     componentDidMount(){
 
-        this.reactor?.dispatch({type:"CLICKTOPIC", newTopic:"tips"});
-        this.reactor!.disposedBy = this.reactor?.state.pipe(
-            map( value => value.mode ),
-            deepDistinctUntilChanged(),
-        ).subscribe( 
-            mode=> this.setState({mode})
-        )
+        // this.reactor?.dispatch({type:"CLICKTOPIC", newTopic:"tips"});
+        
+        // this.reactor!.disposedBy = this.reactor?.state.pipe(
+        //     map( value => value.mode ),
+        //     deepDistinctUntilChanged(),
+        // ).subscribe( 
+        //     mode=> this.setState({mode})
+        // )
     }
 
     componentWillUnmount(){

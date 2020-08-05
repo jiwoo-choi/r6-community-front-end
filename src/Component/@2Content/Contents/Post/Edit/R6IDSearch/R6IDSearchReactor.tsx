@@ -1,8 +1,9 @@
 import { RANKAPI, RANKBYREGION } from "../../../../../../Util/Entity"
 import { Reactor } from "reactivex-redux"
-import { Observable, of, concat } from "rxjs"
+import { Observable, of, concat, forkJoin } from "rxjs"
 import {  catchErrorJustReturn } from "reactivex-redux"
 import { filter, takeUntil, map,  } from "rxjs/operators"
+import R6Ajax from "../../../../../../Library/R6Ajax"
 
 export const WRITETEXT = "WRITETEXT" as const
 export const INVIS_SEARCHLIST = "INVIS_SEARCHLIST" as const
@@ -101,12 +102,12 @@ export default class R6IDSearchReactor extends Reactor<SearchAction, SearchState
             case "INVIS_SEARCHLIST":
                 return  concat(
                         of<SearchMutation>({type:"SETLOADING", isLoading: true}),
-                        // this.fetchID(action.text).pipe(
-                        //   takeUntil( this.action.pipe(filter( value => { 
-                        //       return value.type === "CANCELSEARCH" || value.type === "INVIS_SEARCHLIST" 
-                        //     }))),
-                        //   map<RANKBYREGION[][], SearchMutation>( res => ({type:"FETCHLIST", list : res, query:action.text})),
-                        // ),
+                        this.fetchID(action.text).pipe(
+                          takeUntil( this.action.pipe(filter( value => { 
+                              return value.type === "CANCELSEARCH" || value.type === "INVIS_SEARCHLIST" || value.type === "WRITETEXT"
+                            }))),
+                          map<RANKBYREGION[][], SearchMutation>( res => ({type:"FETCHLIST", list : res, query:action.text})),
+                        ),
                     )
 
             case "CANCELSEARCH":
@@ -153,6 +154,18 @@ export default class R6IDSearchReactor extends Reactor<SearchAction, SearchState
     }
 
     fetchID(id: string) {
+
+        return forkJoin(
+            R6Ajax.shared.getJson(`http://r6-search.me/api/stat/rank/uplay/${id}`).pipe(
+                catchErrorJustReturn([] as any)
+            ),
+            R6Ajax.shared.getJson(`http://r6-search.me/api/stat/rank/xbl/${id}`).pipe(
+                catchErrorJustReturn([] as any)
+            ),
+            R6Ajax.shared.getJson(`http://r6-search.me/api/stat/rank/psn/${id}`).pipe(
+                catchErrorJustReturn([] as any)
+            ),
+        )
         //: Observable<RANKBYREGION[][]> 
         // return R6StatAPI.shared.getGeneralAPI(id)
         // .pipe(

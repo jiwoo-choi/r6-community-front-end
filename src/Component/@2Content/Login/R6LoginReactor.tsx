@@ -4,7 +4,8 @@ import { ajax } from "rxjs/ajax"
 import { map, catchError } from "rxjs/operators"
 
 const LOGIN = "LOGIN"
-const GOTOREGISTER = "GOTOREGISTER"
+const CLOSELOGIN = "CLOSELOGIN"
+
 
 interface LOGIN {
     type : typeof LOGIN,
@@ -12,17 +13,18 @@ interface LOGIN {
     pwd: string,
 }
 
-interface GOTOREGISTER {
-    type: typeof GOTOREGISTER
+interface CLOSELOGIN {
+    type : typeof CLOSELOGIN,
 }
 
-export type LoginAction = LOGIN | GOTOREGISTER
+export type LoginAction = LOGIN | CLOSELOGIN 
 
 
 const LOGINCHECKLOADING = "LOGINCHECKLOADING"
 const LOGINSUCCESS = "LOGINSUCCESS"
 const LOGINFAILURE = "LOGINFAILURE"
-const GOTO = "GOTO"
+const CLOSE = "CLOSE"
+
 
 interface LOGINCHECKLOADING {
     type : typeof LOGINCHECKLOADING,
@@ -37,19 +39,16 @@ interface LOGINFAILURE {
     message: string
 }
 
-interface GOTO {
-    type : typeof GOTO,
+interface CLOSE {
+    type : typeof CLOSE,
 }
 
-
-type LoginMutation = LOGINCHECKLOADING | LOGINSUCCESS | LOGINFAILURE | GOTO
-
+type LoginMutation = LOGINCHECKLOADING | LOGINSUCCESS | LOGINFAILURE | CLOSE
 
 export interface LoginState {
     isLoading: boolean,
     isError:boolean,
     isSuccess: boolean,
-    goto: boolean,
     message:string,
 }
 
@@ -57,7 +56,6 @@ export const LoginInitialState : LoginState = {
     isLoading : false,
     isError: false,
     isSuccess : false,
-    goto: false,
     message:"",
 }
 
@@ -66,9 +64,7 @@ export default class LoginReactor extends Reactor<LoginAction, LoginState, Login
     mutate(action: LoginAction): Observable<LoginMutation> {
 
         switch(action.type) {
-            case "GOTOREGISTER":
-                return of<LoginMutation>({type:"GOTO"})
-                
+
             case "LOGIN":
 
                 if (action.id === "" || action.pwd === "") {
@@ -79,6 +75,9 @@ export default class LoginReactor extends Reactor<LoginAction, LoginState, Login
                     of<LoginMutation>({type:"LOGINCHECKLOADING"}),
                     this.login(action.id, action.pwd)
                 )
+
+            case "CLOSELOGIN":
+                return of({type:"CLOSE"})
         }
     }
 
@@ -87,9 +86,6 @@ export default class LoginReactor extends Reactor<LoginAction, LoginState, Login
         let newState = {...this.initialState};
 
         switch(mutation.type) {
-            case "GOTO":
-                newState.goto = true;
-                return newState;
 
             case "LOGINCHECKLOADING":
                 newState.isLoading = true;
@@ -102,6 +98,9 @@ export default class LoginReactor extends Reactor<LoginAction, LoginState, Login
 
             case "LOGINSUCCESS" :
                 newState.isSuccess = true;
+                return newState;
+
+            case "CLOSE":
                 return newState;
         }
     }

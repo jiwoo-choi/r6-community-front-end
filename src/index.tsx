@@ -12,6 +12,8 @@ import {
   Link
 } from "react-router-dom";
 import GlobalLoading from './GlobalLoading';
+import { R6Register, R6RegisterConfirmation } from './Component/@2Content/Login';
+import { R6Footer } from './Component/@3Footer';
 
 // works like global reactor.
 // consider using that
@@ -21,7 +23,15 @@ ReactDOM.render(
   <>
     <Router>
       <Suspense fallback={ <div>loading...</div>}>
-        <Main/>
+        <Switch>
+          <Route path="/register" exact>
+                <R6Register></R6Register>
+          </Route>
+          <Main/>
+        </Switch>
+
+        <R6Footer></R6Footer>
+
       </Suspense>
     </Router>
   </>

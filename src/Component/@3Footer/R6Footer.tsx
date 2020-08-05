@@ -34,7 +34,6 @@ export default class R6Footer extends React.Component {
                     <div> Family Site </div>
                     <div> R6 Search.me </div>
                     <div> R6 Search.me </div>
-
                 </FROUMMARGIN>
             </FOOTERCONTAINER>
         )

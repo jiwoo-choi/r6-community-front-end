@@ -2,9 +2,10 @@ import React from "react";
 import styled from 'styled-components'
 import { Button } from "semantic-ui-react";
 import { withReactor } from "reactivex-redux";
-import { ForumReactorProps, Topic } from "../@0ForumReactor/ForumReactor";
+import { ForumReactorProps, Topic, ForumReactorProp, ForumState } from "../@0ForumReactor/ForumReactor";
 import { withRouter, RouteComponentProps } from "react-router-dom";
 import { R6Button, R6ButtonGroup } from './R6Button'
+import { map, distinctUntilChanged, skip } from "rxjs/operators";
 
 const NAVIGATIONSTYLE = styled.nav`
     max-width:1200px;
@@ -70,21 +71,26 @@ const SUBNAVITEMS = styled.div`
   margin: 0 auto;
   padding-top: 5rem;
   padding-left: 1rem;
+
+  @media only screen and (max-width: 600px) {
+
+    & {
+        padding-top: 3rem;
+    }
+  }
 `
 
-class R6Navigation extends React.Component<ForumReactorProps & RouteComponentProps> {
+class R6Navigation extends React.Component<ForumReactorProp & RouteComponentProps, ForumState> {
     
 
-    componentDidMount(){
-        // this.props.history.listen( (value) => {
-        //     //pathname changed, do the request again... :)
-        //     //or not.. we don't have to do that. let's say we cached.
-        // })
+    constructor(props: any) {
+        super(props);
+        this.state = this.props.reactor.getState();
+
     }
-    
+
     handleToggle(value : Topic, url?: string){
-        const dispatcher = this.props.reactor_control.dispatcher;
-        dispatcher({type:"CLICKTOPIC", newTopic: value})();
+        this.props.reactor.dispatch({type:"SETTOPIC", newTopic: value})
         if (url) {
             this.props.history.push(`${url}`)
         } else {
@@ -92,15 +98,26 @@ class R6Navigation extends React.Component<ForumReactorProps & RouteComponentPro
         }
     }
 
+    componentDidMount(){
+        this.props.reactor.state.pipe(
+            map( res => res.topic),
+            distinctUntilChanged(),
+            skip(1),
+        ).subscribe(
+            topic => this.setState({topic})
+        )
+    }
+
     render(){
-        const { topic } = this.props.reactor_control.getState();
-        // console.log(this.props.reactor_control.getState())
+
+        const { topic } = this.state;
+
         return(
             <React.Fragment>
                 <GLOBALNAV>
                     <NAVITEMS>
                         <BRANDLOGO onClick={()=>{this.handleToggle("free", "/")}}> R6 Search - TALK </BRANDLOGO>
-                        <Button secondary compact>로그인하기</Button>
+                        <Button secondary compact onClick={this.props.reactor.dispatchFn({type:"CLICKLOGINBUTTON"})}>로그인하기</Button>
                     </NAVITEMS>
                 </GLOBALNAV>
 
@@ -117,4 +134,4 @@ class R6Navigation extends React.Component<ForumReactorProps & RouteComponentPro
     }
 }
 
-export default withRouter(withReactor(R6Navigation, (state)=>({topic: state.topic})));
+export default withRouter(R6Navigation);

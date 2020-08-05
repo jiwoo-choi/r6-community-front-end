@@ -15,11 +15,8 @@ export interface CLICKREGISTERBUTTON {
     type: typeof CLICKREGISTERBUTTON;
 } //how to get text?
 
-export interface CANCELREGISTERBUTTON {
-    type: typeof CANCELREGISTERBUTTON;
-}
 
-export type EditorAction = SELECTRANK | CLICKREGISTERBUTTON | CANCELREGISTERBUTTON
+export type EditorAction = SELECTRANK | CLICKREGISTERBUTTON 
 
 export const POSTUPLOAD = "POSTUPLOAD"
 export const ADDRANKDATA = "ADDRANKDATA"
@@ -69,4 +66,8 @@ export default class R6EditorReactor extends Reactor<EditorAction, EditorState, 
         return state;
     }
     
+
+    postUpload(content:string){
+        
+    }
 }

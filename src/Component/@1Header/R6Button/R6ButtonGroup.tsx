@@ -7,8 +7,6 @@ const ButtonGroup = styled.div`
     text-align: center;
     font-size:2.3rem;
     
- 
-    
     @media screen and (max-width:820px) {
         & div {
             font-size:1.8rem;
