@@ -13,6 +13,8 @@ import { skip, distinctUntilChanged, map } from "rxjs/operators";
 import _ from "lodash";
 import { RouteComponentProps, withRouter } from "react-router-dom";
 import { interval } from "rxjs";
+import R6Comment from "../../../../@Reusable-Component/R6Comment";
+import R6TextArea from "../../../../@Reusable-Component/R6TextArea";
 
 const POSTAREA = styled.div`
     position: relative;
@@ -50,7 +52,6 @@ const TIME = styled.div`
 const BUTTONAREA = styled.div`
     display:flex;
     justify-content: flex-end;
-    margin-top:10px;
 `
 
 
@@ -59,7 +60,7 @@ class R6Post extends React.PureComponent<ForumReactorProp & RouteComponentProps,
 
     disposeBag: DisposeBag | null = new DisposeBag();
     reactor : PostReactor;
-    commentInput = React.createRef<TextArea>();
+    commentInput = React.createRef<HTMLTextAreaElement>();
 
     constructor(props:any) {
         super(props)
@@ -88,7 +89,6 @@ class R6Post extends React.PureComponent<ForumReactorProp & RouteComponentProps,
         this.disposeBag!.disposeOf = this.props.reactor.state.pipe(
             map( res => ({ post: res.post})),
             distinctUntilChanged( ( prev, curr) => _.isEqual(prev.post, curr.post)),
-            skip(1),
         ).subscribe(
             res => this.setState({ post : res.post})
         )        
@@ -96,7 +96,6 @@ class R6Post extends React.PureComponent<ForumReactorProp & RouteComponentProps,
         this.disposeBag!.disposeOf = this.props.reactor.state.pipe(
             map( res => ({ post: res.post})),
             distinctUntilChanged( ( prev, curr) => _.isEqual(prev.post, curr.post)),
-            skip(1),
         ).subscribe(
             res => this.setState({ post : res.post})
         )        
@@ -105,7 +104,6 @@ class R6Post extends React.PureComponent<ForumReactorProp & RouteComponentProps,
         this.disposeBag!.disposeOf = this.reactor.state.pipe( 
             map( res=> res.commentIsLoading ),
             distinctUntilChanged(_.isEqual),
-            skip(1),
         ).subscribe(
             commentIsLoading => this.setState({ commentIsLoading })
         )
@@ -113,7 +111,6 @@ class R6Post extends React.PureComponent<ForumReactorProp & RouteComponentProps,
         this.disposeBag!.disposeOf = this.reactor.state.pipe( 
             map( res=> res.commentIsError ),
             distinctUntilChanged(_.isEqual),
-            skip(1),
         ).subscribe(
             commentIsError => this.setState({ commentIsError })
         )
@@ -121,7 +118,6 @@ class R6Post extends React.PureComponent<ForumReactorProp & RouteComponentProps,
         this.disposeBag!.disposeOf = this.reactor.state.pipe( 
             map( res=> res.commentsList ),
             distinctUntilChanged(_.isEqual),
-            skip(1),
         ).subscribe(
             commentsList => this.setState({ commentsList })
         )
@@ -135,9 +131,21 @@ class R6Post extends React.PureComponent<ForumReactorProp & RouteComponentProps,
     }
 
     commentList(comment : CommentType[]){
+        console.log(comment.map( (value, index) => {
+            return (
+                <R6Comment key={index+"_COMMENT"} comment={value}></R6Comment>
+              )
+        }))
+
         return comment.map( (value, index) => {
             return (
+                <R6Comment key={index+"_COMMENT"} comment={value}></R6Comment>
+              )
+        })
+    }
 
+    /**
+     * 
                 <Comment key={"COMMENT_" + index}>
                 <Comment.Avatar src='https://react.semantic-ui.com/images/avatar/small/matt.jpg' />
                 <Comment.Content>
@@ -151,10 +159,7 @@ class R6Post extends React.PureComponent<ForumReactorProp & RouteComponentProps,
                   </Comment.Actions>
                 </Comment.Content>
               </Comment>
-              )
-        })
-    }
-
+     */
     render(){
     
         // const { author, title, content, commentList, createdTime , postId } = this.state;
@@ -203,8 +208,30 @@ class R6Post extends React.PureComponent<ForumReactorProp & RouteComponentProps,
                             덧글 {commentList.length} 개
                         </Header>
                         
-                        <Form>
-                            <TextArea placeholder='Tell us more' ref={ this.commentInput }/>
+
+                        <R6TextArea placeholder='덧글을 입력해주세요' textRef={ (ref) => this.commentInput = ref }/>
+                        <BUTTONAREA>
+                            <Button 
+                                content='덧글 달기'
+                                labelPosition='left'
+                                icon='edit'
+                                color={"green"}
+                                disabled={this.state.commentIsLoading}
+                                loading={this.state.commentIsLoading}
+                                onClick={()=>{
+                                    
+                                    const {isLogined} = this.props.reactor.getState();
+                                    if (isLogined) {
+                                        this.reactor?.dispatch({type:"CLICKREPLY", postId: postId, content:(this.commentInput as any).current.value})
+                                    } else {
+                                        this.props.reactor.dispatch({type:"CLICKLOGINBUTTON"})
+                                    }
+                                    
+                                    }}/>
+                            </BUTTONAREA>
+
+                        {/* <Form>
+                            <R6TextArea placeholder='Tell us more' ref={ (ref) => this.commentInput = ref }/>
                             <BUTTONAREA>
                             <Button 
                                 content='덧글 달기'
@@ -213,14 +240,25 @@ class R6Post extends React.PureComponent<ForumReactorProp & RouteComponentProps,
                                 color={"green"}
                                 disabled={this.state.commentIsLoading}
                                 loading={this.state.commentIsLoading}
-                                onClick={()=>{this.reactor?.dispatch({type:"CLICKREPLY", postId: postId, content:(this.commentInput as any).current.ref.current.value})}}/>
+                                onClick={()=>{
+                                    
+                                    const {isLogined} = this.props.reactor.getState();
+                                    if (isLogined) {
+                                        this.reactor?.dispatch({type:"CLICKREPLY", postId: postId, content:(this.commentInput as any).current.ref.current.value})
+                                    } else {
+                                        this.props.reactor.dispatch({type:"CLICKLOGINBUTTON"})
+                                    }
+                                    
+                                    }}/>
                             </BUTTONAREA>
-                        </Form>
-
+                        </Form> */}
+                        
                         <React.Fragment>
-                            <Comment.Group>
+                            {/* <R6Comment comment={commentsReactorList}></R6Comment> */}
+                            { commentsReactorList.length !== 0 ? this.commentList(commentsReactorList) : this.commentList(commentList) }
+                            {/* <Comment.Group>
                                 { commentsReactorList.length !== 0 ? this.commentList(commentsReactorList) : this.commentList(commentList) }
-                            </Comment.Group>
+                            </Comment.Group> */}
                         </React.Fragment>
                     </POSTAREA>
 

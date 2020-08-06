@@ -80,6 +80,7 @@ export class R6List extends React.PureComponent<ForumReactorProp & RouteComponen
         for (let i = 0 ; i < cellData.length ; i++) {
             cell.push( 
                 <R6Cell onClick={ ()=>{
+                    // this.props.history.push('/login')
                     this.props.reactor.dispatch({type:"SETPAGENO", pageId: cellData[i].postId})
                     this.props.history.push(`${pathname}/post/${cellData[i].postId}`)
                 }} isNotice={cellData[i].notice} key={this.state.topic+"_CELL_"+i} data={cellData[i]}/>
@@ -90,7 +91,7 @@ export class R6List extends React.PureComponent<ForumReactorProp & RouteComponen
     
     render(){
 
-        const { isLoading, list, isError } = this.state;
+        const { isLoading, list, isError,} = this.state;
 
         if ( isLoading  ) {
         return (
@@ -104,7 +105,7 @@ export class R6List extends React.PureComponent<ForumReactorProp & RouteComponen
             return (
                 <>
                     {this.getList(list)}
-                    <R6ListFooter></R6ListFooter>
+                    <R6ListFooter reactor={this.props.reactor}></R6ListFooter>
                 </>
             )
         }

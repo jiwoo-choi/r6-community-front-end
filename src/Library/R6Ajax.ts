@@ -20,7 +20,7 @@ export default class R6Ajax {
         return R6Ajax.instance;
     }
 
-    accessToken? : string = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0LWFjY291bnQiLCJpYXQiOjE1OTY1ODk2ODIsImV4cCI6MTU5NjY3NjA4Mn0.ETUR_vF_LDuPk4opbrAqs5EcV8oiYVp7gqOZO0AnKHI"
+    accessToken? : string;
     baseUrl = "http://r6-search.me"
     baseURLWithAPIVersion = this.baseUrl + "/api/c/" 
 
@@ -35,7 +35,7 @@ export default class R6Ajax {
      */
 
     signIn(id: string, pwd: string) : Observable<string> {
-        const {href} = new URL(`/signin`, this.baseURLWithAPIVersion);
+        const {href} = new URL(`signin`, this.baseURLWithAPIVersion);
         return ajax.post(href, { password : pwd, username: id }, {
             "Content-Type": "application/json"
         }).pipe( map( value => {

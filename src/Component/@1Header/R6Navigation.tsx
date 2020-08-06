@@ -106,18 +106,38 @@ class R6Navigation extends React.Component<ForumReactorProp & RouteComponentProp
         ).subscribe(
             topic => this.setState({topic})
         )
+
+        this.props.reactor.state.pipe(
+            map( res => res.isLogined),
+            distinctUntilChanged(),
+            skip(1),
+        ).subscribe(
+            isLogined => this.setState({isLogined})
+        )
+
+        this.props.reactor.state.pipe(
+            map( res => res.nickName),
+            distinctUntilChanged(),
+            skip(1),
+        ).subscribe(
+            nickName => this.setState({nickName})
+        )
+
     }
 
     render(){
 
-        const { topic } = this.state;
+        const { topic, isLogined } = this.state;
 
         return(
             <React.Fragment>
                 <GLOBALNAV>
                     <NAVITEMS>
                         <BRANDLOGO onClick={()=>{this.handleToggle("free", "/")}}> R6 Search - TALK </BRANDLOGO>
-                        <Button secondary compact onClick={this.props.reactor.dispatchFn({type:"CLICKLOGINBUTTON"})}>로그인하기</Button>
+                        { !isLogined ? 
+                            (<Button secondary compact onClick={this.props.reactor.dispatchFn({type:"CLICKLOGINBUTTON"})}>로그인하기</Button>) :
+                            (<div> {this.state.nickName}님 안녕하세요! </div>)
+                        }
                     </NAVITEMS>
                 </GLOBALNAV>
 

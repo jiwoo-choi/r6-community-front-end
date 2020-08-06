@@ -14,6 +14,7 @@ import {
 import GlobalLoading from './GlobalLoading';
 import { R6Register, R6RegisterConfirmation } from './Component/@2Content/Login';
 import { R6Footer } from './Component/@3Footer';
+import R6Comment from './Component/@Reusable-Component/R6Comment';
 
 // works like global reactor.
 // consider using that

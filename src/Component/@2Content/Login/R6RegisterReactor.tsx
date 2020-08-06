@@ -198,7 +198,7 @@ export default class R6RegisterReactor extends Reactor<RegisterAction, RegisterS
        }).pipe(
             map( value => ({type: "SUCCESS"} as RegisterMutation)),
             catchError( err =>{
-                return of<RegisterMutation>({type:"REGISTERERROR", messageHeader: "서버쪽 오류", messageDesc: "서버에서 오류가 있었습니다."})
+                return of<RegisterMutation>({type:"REGISTERERROR", messageHeader: "서버쪽 오류", messageDesc: err.response.message})
             } )
         )
     }

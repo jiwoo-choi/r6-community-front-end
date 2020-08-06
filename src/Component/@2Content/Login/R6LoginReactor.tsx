@@ -1,7 +1,8 @@
 import { Reactor } from "reactivex-redux"
 import { Observable, concat, of } from "rxjs"
 import { ajax } from "rxjs/ajax"
-import { map, catchError } from "rxjs/operators"
+import { map, catchError, flatMap, tap } from "rxjs/operators"
+import R6Ajax from "../../../Library/R6Ajax"
 
 const LOGIN = "LOGIN"
 const CLOSELOGIN = "CLOSELOGIN"
@@ -105,15 +106,20 @@ export default class LoginReactor extends Reactor<LoginAction, LoginState, Login
         }
     }
     
-    login(id : string, pwd: string){
-        return ajax.post(`https://www.r6-search.me/api/c/signin`, { password : pwd, username: id }, {
-            "Content-Type": "application/json"
-        }).pipe( 
-            map( value => ({type: "LOGINSUCCESS"} as LoginMutation)),
-            catchError( err =>{
+    login(id : string, pwd: string) {
+        return R6Ajax.shared.signIn(id, pwd).pipe(
+            map<any,LoginMutation>( value => ({type:"LOGINSUCCESS"})),
+            catchError( err => {
                 return of<LoginMutation>({type:"LOGINFAILURE", message: err.response.message})
-            } )
+            })
         )
     }
+        // return ajax.post(`https://www.r6-search.me/api/c/signin`, { password : pwd, username: id }, {
+        //     "Content-Type": "application/json"
+        // }).pipe( 
+        //     map( value => ({type: "LOGINSUCCESS"} as LoginMutation)),
+        //     catchError( err =>{
+        //         return of<LoginMutation>({type:"LOGINFAILURE", message: err.response.message})
+        //     } )
+        // )
 }
-

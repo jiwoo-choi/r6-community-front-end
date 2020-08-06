@@ -1,10 +1,10 @@
 import { Editor } from '@toast-ui/react-editor'
 import React  from 'react'
-import { Button } from 'semantic-ui-react'
+import { Button, Loader, Dimmer, Segment, Portal } from 'semantic-ui-react'
 import { Input } from 'semantic-ui-react'
 import 'codemirror/lib/codemirror.css';
 import '@toast-ui/editor/dist/toastui-editor.css';
-import R6EditorReactor, { EditorinitialState } from './R6EditorReactor';
+import R6EditorReactor, { EditorinitialState, EditorState } from './R6EditorReactor';
 
 import styled from 'styled-components'
 
@@ -15,6 +15,8 @@ import R6IDSearch from './R6IDSearch/R6IDSearch';
 import { RouteComponentProps, withRouter } from 'react-router-dom';
 import { interval } from 'rxjs';
 import R6Ajax from '../../../../../Library/R6Ajax';
+import { map, distinctUntilChanged, filter, skip } from 'rxjs/operators';
+import { deepDistinctUntilChanged } from 'reactivex-redux';
 
 const FLUIDDIV = styled.div`
     width:100%;
@@ -45,24 +47,64 @@ const EDITORAREA = styled.div`
 //     margin-bottom:20px;
 // }
 
-interface Props {
-    //content string type html?
-    onSubmit?: (title: string, content: string) => void;
-    onCancel?: () => void;
-}
-
-class R6Editor extends React.Component<Props & ForumReactorProp & RouteComponentProps>{
+class R6Editor extends React.Component<ForumReactorProp & RouteComponentProps, EditorState>{
 
     private editorRef  = React.createRef<Editor>();
-    reactor? : R6EditorReactor;
+    private titleRef  = React.createRef<any>();
 
-    componentWillMount(){
+    reactor : R6EditorReactor;
+
+    constructor(props:any){
+        super(props);
+        this.state = EditorinitialState;
         this.reactor = new R6EditorReactor(EditorinitialState)
     }
     
-    
     componentDidMount(){
 
+        this.reactor?.state.pipe(
+            map( res => res.isLoading ),
+            distinctUntilChanged(),
+            skip(1),
+        ).subscribe(
+            isLoading => this.setState({isLoading})
+        )
+
+        this.reactor?.fireImmediately( 
+            value => value.type === "ADDRANKDATA" ,
+            (result: any) => {
+                this.insertTable( result.data, result.platform, result.id)
+            }
+        )
+
+        this.reactor?.fireImmediately( 
+            value => value.type === "SUCCESS" ,
+            (result: any) => {
+                this.props.reactor.dispatch({type:"SETPAGENO",pageId: result.postId })
+                this.props.history.push(`post/${result.postId}`)
+            }
+        )
+
+
+
+
+
+
+        // this.reactor?.state.pipe(
+        //     filter( value => value. === ""),
+        //     deepDistinctUntilChanged(),
+        // ).subscribe(
+        //     res => this.insertTable(res.)
+        // )
+        // this.reactor?.state.pipe(
+        //     map( res => res.data ),
+        //     distinctUntilChanged(),
+        //     skip(1),
+        // ).subscribe(
+        //     // data => this.insertTable(data)
+        // )
+        
+        
         // const toBase64 = (file: any) => new Promise((resolve, reject) => {
         //     const reader = new FileReader();
         //     reader.readAsDataURL(file);
@@ -156,42 +198,27 @@ class R6Editor extends React.Component<Props & ForumReactorProp & RouteComponent
         <table>
         <thead>
         <tr>
-        <th><strong>구분</strong></th>
-        <th><strong>데이터</strong></th>
+        <th><strong>아이디</strong></th>
+        <th><strong>플랫폼</strong></th>
+        <th><strong>랭크</strong></th>
+        <th><strong>MMR</strong></th>
+        <th><strong>시즌 최대 랭크</strong></th>
+        <th><strong>시즌 최대 MMR</strong></th>
+        <th><strong>승률</strong></th>
+        <th><strong>K/D</strong></th>
         </tr>
         </thead>
         <tbody>
         <tr>
-        <td>아이디</td>
         <td>${id}</td>
-        </tr>
-        <td>플랫폼</td>
         <td>${platform}</td>
-        </tr>
-        <tr>
-        <td>랭크</td>
         <td>${data.rankString}</td>
-        </tr>
-        <tr>
-        <td>MMR</td>
         <td>${data.mmr}</td>
-        </tr>
-        <tr>
-        <td>시즌 최대 랭크</td>
         <td>${data.maxRankString}</td>
-        </tr>
-        <tr>
-        <td>시즌 최대 MMR</td>
         <td>${data.maxMmr}</td>
-        </tr>
-        <tr>
-        <td>승률</td>
         <td>${
             WD
         } % </td>
-        </tr>
-        <tr>
-        <td>K/D</td>
         <td>${KD} %</td>
         </tr>
         </tbody>
@@ -201,31 +228,28 @@ class R6Editor extends React.Component<Props & ForumReactorProp & RouteComponent
         , true)
     }
 
-    onSubmit(){
-        // this.props.onSubmit()
-    }
-
+    
     render(){
-       
-            const parentReactor = this.props.reactor;
-            const localReactor = this.reactor;
-            const { topic } = parentReactor.getState();
+    
+            const { topic } = this.props.reactor.getState();
+            const { isLoading } = this.state;
 
-                    
             return(
 
-                <CONTAINER>       
+                <CONTAINER>    
                 <FLUIDDIV>
                     <Input
                         size={'large'}
                         style={{width:'100%'}}
                         placeholder={"제목을 입력해주세요"}
+                        ref={this.titleRef}
                     />
                 </FLUIDDIV>
     
                 <FLUIDDIV>
+
                 { topic === "together" && 
-                    <R6IDSearch {...this.props} ></R6IDSearch>
+                    <R6IDSearch reactor={this.reactor} ></R6IDSearch>
                 }
                 </FLUIDDIV>
 
@@ -241,8 +265,17 @@ class R6Editor extends React.Component<Props & ForumReactorProp & RouteComponent
     
                 <FLUIDDIV>
                     <BUTTONGROUP>
-                        <Button size={"big"} onClick={()=> {this.props.history.goBack()}}> 취소하기 </Button>
-                        <Button size={"big"} positive onClick={()=>{ console.log(this.getHtml())}}> 등록하기 </Button>
+                        <Button size={"big"} disabled={this.state.isLoading} onClick={()=> {this.props.history.goBack()}}> 취소하기 </Button>
+                        <Button size={"big"} loading={this.state.isLoading} disabled={this.state.isLoading} positive onClick={()=>{ 
+
+                            const { isLogined } = this.props.reactor.getState();
+                            if (!isLogined) {
+                                this.props.reactor?.dispatch({type:"CLICKLOGINBUTTON"})
+                            } else {
+                                const html: string = (this.getHtml()) ? this.getHtml()! : ""
+                                this.reactor?.dispatch({type:"CLICKREGISTERBUTTON", title: this.titleRef.current!.inputRef.current.value, content:html, topic: topic})
+                            }
+                        }}> 등록하기 </Button>
                     </BUTTONGROUP>
                 </FLUIDDIV>
             </CONTAINER>

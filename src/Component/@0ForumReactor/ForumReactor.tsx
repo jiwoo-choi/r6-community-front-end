@@ -29,13 +29,12 @@ export const SETPAGENO = "SETPAGENO" as const
 
 export const TOPICLISTREQUSET = "TOPICLISTREQUSET" as const
 export const CLICKPOST = "CLICKPOST" as const 
-
-
-export const CLICKWRITE = "CLICKWRITE" as const
 export const CLICKPAGE = "CLICKPAGE" as const
-export const CLICKBACK = "CLICKBACK" as const
+
 export const CLICKLOGINOFFBUTTON = "CLICKLOGINOFFBUTTON" as const
 export const CLICKLOGINBUTTON = "CLICKLOGINBUTTON" as const
+
+export const INVIS_LOGINSUCCESS = "INVIS_LOGINSUCCESS" as const
 
 
 export interface SETTOPIC {
@@ -53,9 +52,6 @@ export interface TOPICLISTREQUSET {
     newTopic: Topic,
 }
 
-export interface CLICKWRITE {
-    type: typeof CLICKWRITE;
-}
 export interface CLICKPAGE {
     type: typeof CLICKPAGE;
     newPage: number,
@@ -65,9 +61,6 @@ export interface CLICKPOST {
     type: typeof CLICKPOST;
     postId: number,
 }
-export interface CLICKBACK {
-    type: typeof CLICKBACK;
-}
 
 export interface CLICKLOGINBUTTON {
     type: typeof CLICKLOGINBUTTON;
@@ -76,7 +69,13 @@ export interface CLICKLOGINOFFBUTTON {
     type: typeof CLICKLOGINOFFBUTTON;
 }
 
-export type ForumAction = SETTOPIC | SETPAGENO | CLICKWRITE | CLICKPAGE | CLICKBACK | CLICKLOGINBUTTON | CLICKLOGINOFFBUTTON | TOPICLISTREQUSET | CLICKPOST
+export interface INVIS_LOGINSUCCESS {
+    type: typeof INVIS_LOGINSUCCESS;
+    nickName: string;
+}
+
+
+export type ForumAction = SETTOPIC | SETPAGENO |  CLICKPAGE  | CLICKLOGINBUTTON | CLICKLOGINOFFBUTTON | TOPICLISTREQUSET | CLICKPOST | INVIS_LOGINSUCCESS
 
 
 export const SETLOADING = "SETLOADING"
@@ -85,9 +84,9 @@ export const FETCHPOST = "FETCHPOST"
 export const MODECHANGE = "MODECHANGE"
 export const TOPICCHANGE = "TOPICCHANGE"
 export const PAGENOCHANGE = "PAGENOCHANGE"
-
 export const LOGINMODALSTATE = "LOGINMODALSTATE"
-
+export const LOGINSUCCESS = "LOGINSUCCESS"
+export const SETNICKNAME = "SETNICKNAME"
 
 // 상태에 대한 힌트.
 export interface SETLOADING {
@@ -106,11 +105,6 @@ export interface FETCHPOST {
     post: ContentType,
 }
 
-export interface MODECHANGE {
-    type: typeof MODECHANGE,
-    mode : Mode,
-}
-
 export interface TOPICCHANGE {
     type: typeof TOPICCHANGE,
     topic: Topic,
@@ -121,20 +115,28 @@ export interface PAGENOCHANGE {
     pageId: number,
 } 
 
-
-
 export interface LOGINMODALSTATE {
     type: typeof LOGINMODALSTATE,
     on: boolean;
 }
 
-type ForumMutation = SETLOADING | FETCHLIST | FETCHPOST | MODECHANGE | TOPICCHANGE | LOGINMODALSTATE | PAGENOCHANGE
+export interface LOGINSUCCESS {
+    type: typeof LOGINSUCCESS
+}
+
+
+export interface SETNICKNAME {
+    type: typeof SETNICKNAME,
+    nickName : string,
+}
+
+type ForumMutation = SETLOADING | FETCHLIST | FETCHPOST  | TOPICCHANGE | LOGINMODALSTATE | PAGENOCHANGE | LOGINSUCCESS | SETNICKNAME
 // --- state
 
 export interface ForumState {
     topic : Topic,
-    mode: Mode,
     page: number,
+    postList?: PostListType;
     list: ListType[],
     isLoading:boolean,
     isError:boolean,
@@ -142,19 +144,21 @@ export interface ForumState {
     postId: number,
     isLogined: boolean,
     isLoginModal: boolean;
+    nickName: string;
 }
 
 export const ForumStateInitialState : ForumState = {
     isError: false,
     isLoading: true,
     page: 1,
-    mode:"list",
+    postList: undefined,
     topic:"free",
     post: undefined,
     postId: 0,
     list:[],
     isLoginModal: false,
     isLogined: false,
+    nickName: "",
 }
 
 export interface ForumReactorProps extends ReactorControlProps<ForumAction, ForumState> { 
@@ -188,12 +192,6 @@ export default class ForumReactor extends Reactor<ForumAction, ForumState, Forum
                     }),
                 ))
 
-        case "CLICKBACK":
-            return of<MODECHANGE>({type:"MODECHANGE", mode: "list"})
-        
-        case "CLICKWRITE":
-            return of<MODECHANGE>({type: "MODECHANGE", mode:"edit"})
-
         case "CLICKPAGE":
             return concat(
                 //is Loading
@@ -221,7 +219,16 @@ export default class ForumReactor extends Reactor<ForumAction, ForumState, Forum
 
         case "CLICKLOGINOFFBUTTON":
             return of<ForumMutation>({type:"LOGINMODALSTATE", on: false})
+
+        case "INVIS_LOGINSUCCESS":
+            return concat(
+                of<ForumMutation>({type:"LOGINMODALSTATE", on: false}),
+                of<ForumMutation>({type:"LOGINSUCCESS"}),
+                of<ForumMutation>({type:"SETNICKNAME", nickName: action.nickName })
+
+            )
         }
+
 
     }
 
@@ -238,10 +245,7 @@ export default class ForumReactor extends Reactor<ForumAction, ForumState, Forum
                 newState.postId = mutation.pageId;
                 return newState;
 
-            case "MODECHANGE":
-                newState.mode = mutation.mode
-                return newState;
-            case "SETLOADING":
+                case "SETLOADING":
                 newState.isLoading = mutation.isLoading
                 return newState
             case "FETCHLIST":
@@ -265,6 +269,14 @@ export default class ForumReactor extends Reactor<ForumAction, ForumState, Forum
             case "LOGINMODALSTATE":
                 newState.isLoginModal = mutation.on;
                 return newState;
+
+            case "LOGINSUCCESS":
+                newState.isLogined = true;
+                return newState;
+
+            case "SETNICKNAME":
+                newState.nickName = mutation.nickName;
+                return newState;
         }
     }
    
@@ -275,16 +287,5 @@ export default class ForumReactor extends Reactor<ForumAction, ForumState, Forum
     fetchPost(postId: number) : Observable<ContentType> {
         return ajax.getJSON<ContentType>(`https://www.r6-search.me/api/c/post/${postId}`)
     }
-
-    postUpload(title: string, content:string, type: Topic) {
-        // let formData = new FormData();
-        // formData.append('title', title);
-        // formData.append('content', content);
-        // formData.append('type', type);
-        // return R6Ajax.shared.post(`/post`, formData, "multipart", true)
-        // .map( res => ({type:""}))
-    }
-
-    // fetchPost(postId: number) : 
 
  }

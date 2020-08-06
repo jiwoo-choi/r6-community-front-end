@@ -28,7 +28,7 @@ import { ForumStateInitialState, Topic } from './Component/@0ForumReactor/ForumR
 import { values } from 'lodash';
 import { deepDistinctUntilChanged } from 'jsreactorkit';
 import { skip } from 'rxjs/operators';
-import { Divider } from 'semantic-ui-react';
+import { Divider, Portal } from 'semantic-ui-react';
 import { R6Login, R6Register } from './Component/@2Content/Login';
 import R6Ajax from './Library/R6Ajax';
 
@@ -80,17 +80,15 @@ class Main extends React.PureComponent<RouteComponentProps> {
 
     if (splittedPathname.length === 4) {
       if (splittedPathname[2] === "post") {
-        ForumStateInitialState.mode = "view"
         ForumStateInitialState.postId = parseInt(splittedPathname[3]);
       }
     }
 
 
-    if (splittedPathname.length === 3) {
-      if (splittedPathname[2] === "editor") {
-        ForumStateInitialState.mode = "edit"
-      }
-    }
+    // if (splittedPathname.length === 3) {
+    //   if (splittedPathname[2] === "editor") {
+    //   }
+    // }
 
     this.newTopic = ForumStateInitialState.topic;
     this.reactor = new ForumReactor(ForumStateInitialState);
@@ -128,6 +126,7 @@ class Main extends React.PureComponent<RouteComponentProps> {
                 <EditorComponent reactor={this.reactor}/>
               </Route>
               
+
               <Route path="*">
                 <Page404></Page404>
               </Route>

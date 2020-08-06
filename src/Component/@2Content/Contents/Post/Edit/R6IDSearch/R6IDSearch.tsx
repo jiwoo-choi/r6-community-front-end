@@ -48,13 +48,12 @@ const CONTENT_PART = styled.div`
 
 
 
-class R6IDSearch extends React.PureComponent<{}, SearchState> {
-
+class R6IDSearch extends React.PureComponent<{reactor? : R6EditorReactor}, SearchState> {
 
     reactor?: R6IDSearchReactor;
     subject!: Subject<any>;
 
-    constructor(props:{}) {
+    constructor(props:any) {
         super(props)
         this.state = R6SearchinitialState;
     }
@@ -73,7 +72,6 @@ class R6IDSearch extends React.PureComponent<{}, SearchState> {
 
     componentDidMount(){
 
-        this.reactor?.fetchID("piliot").subscribe(res => console.log(res));
 
         this.reactor?.state.pipe(
             map((value) => value.isLoading ),
@@ -132,7 +130,13 @@ class R6IDSearch extends React.PureComponent<{}, SearchState> {
             if (value.length > 0) {
                 return (
                     //this.props.reactor?.dispatch({type:"SELECTRANK", data: value[0]})
-                    <div className="autocomplete-cell" key={"CELL_"+index} onMouseDown={()=>{}}> 
+                    <div className="autocomplete-cell" key={"CELL_"+index} onMouseDown={()=>{ this.props.reactor?.dispatch(
+                        { 
+                            type:"SELECTRANK", 
+                            data: value[0].rankStat,
+                            id: this.reactor!.getState().value,
+                            platform: lists[index]
+                        })}}> 
                         <div className="tag">
                             {lists[index]} 서버 
                         </div>
