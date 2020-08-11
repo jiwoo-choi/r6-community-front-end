@@ -1,9 +1,12 @@
-import { Input, Button, Pagination, Icon } from "semantic-ui-react";
+import { Input, Button, Pagination, Icon, PaginationProps } from "semantic-ui-react";
 import React from "react";
 import styled from 'styled-components'
 import { ForumReactorProps, ForumReactorProp, ForumState } from "../../../@0ForumReactor/ForumReactor";
 import {withReactor} from "reactivex-redux";
 import { RouteComponentProps, withRouter } from "react-router-dom";
+import { lte } from "lodash";
+import { observer, inject } from "mobx-react";
+import ForumStore from "../../../Stores/ForumStore";
 
 
 
@@ -36,66 +39,83 @@ const BUTTONAREA = styled.div`
 `
 
 
-const SEARCHAREA = styled.div`
-    // display:flex;
-    // justify-content: flex-end;
-    // align-items:center;
-`
+interface Props {
+    forum?: ForumStore; 
+}
+
+@inject('forum')
+@observer
+class R6ListFooter extends React.PureComponent<Props>{
+
+    handlePaginationChange(event: React.MouseEvent<HTMLAnchorElement, MouseEvent>, data: PaginationProps){
+
+        if (data.activePage) {
+            let activePage: number; 
+            
+            if (typeof data.activePage === "string") {
+                activePage = parseInt(data.activePage);
+            } else {
+                activePage = data.activePage
+            }
+            this.props.forum!.getList(undefined, activePage);
+        }
 
 
-class R6ListFooter extends React.PureComponent<RouteComponentProps & ForumReactorProp>{
+    }
+
+    handleOnClick() {
+        this.props.forum!.goEditor();
+
+        // const isLogined = this.props.forum!.isLogined;
+
+        // if (isLogined) {
+        //     // let regexp = new RegExp(`\/[a-z]{1,}|\/`);
+        //     // let pathname = this.props.location.pathname;
+        //     // let progressed = regexp.exec(pathname);
+        //     // let excuted = progressed ? progressed[0] : "/null";
+        // } else {
+
+        // }
+
+                                        // if (isLogined) {
+                        //     //isLogined but no more access token?
+                        //     let regexp = new RegExp(`\/[a-z]{1,}|\/`);
+                        //     let pathname = this.props.location.pathname;
+                        //     let progressed = regexp.exec(pathname);
+                        //     let excuted = progressed ? progressed[0] : "/null";
+    
+                        //     if (excuted === "/") {
+                        //         excuted = "/free"
+                        //     }
+
+                        //     this.props.history.push(`${excuted}/editor`)
+
+    }
 
     render() {
+        const { page, isLogined, meta } = this.props.forum!;
+
         return(
             <>
                 <BUTTONAREA>
-                    {/* <Pagination className="pagenation" defaultActivePage={1} totalPages={3} /> */}
 
                     <Pagination
-                        activePage={1}
+                        activePage={page}
                         boundaryRange={1}
-                        // onPageChange={this.handlePaginationChange}
-                        size="medium"
+                        onPageChange={this.handlePaginationChange.bind(this)}
+                        size="mini"
                         siblingRange={0}
-                        totalPages={20}
-                        // Heads up! All items are powered by shorthands, if you want to hide one of them, just pass `null` as value
-                        ellipsisItem={true}
+                        totalPages={meta.totalPage}
                     />
 
-
-                        {/* <Input style={{marginRight:'10px'}} icon='search' placeholder='Search...' /> */}
-                    <Button className="write-button" icon color={"green"} size={"big"} onClick={()=>{ 
-
-                        const {isLogined} = this.props.reactor.getState();
-                        
-                        if (isLogined) {
-                            //isLogined but no more access token?
-                            let regexp = new RegExp(`\/[a-z]{1,}|\/`);
-                            let pathname = this.props.location.pathname;
-                            let progressed = regexp.exec(pathname);
-                            let excuted = progressed ? progressed[0] : "/null";
-    
-                            if (excuted === "/") {
-                                excuted = "/free"
-                            }
-
-                            this.props.history.push(`${excuted}/editor`)
-
-                        } else {
-                            this.props.reactor.dispatch({type:"CLICKLOGINBUTTON"})
-                        }
-                     
-                        //if this isLogined false, then we can't do that sorry.
-                        //if this isLogined 
-                        
-                    }}>
+                    {/* <Input style={{marginRight:'10px'}} icon='search' placeholder='Search...' /> */}
+                    <Button className="write-button" icon color={"green"} size={"big"} onClick={this.handleOnClick.bind(this)}>
                     <Icon name={"edit"}></Icon>
-
-                         글쓰기 </Button>
+                         &nbsp; 글쓰기 </Button>
                 </BUTTONAREA>
             </>
         );
     }
 }
 
-export default withRouter(R6ListFooter);
+export default R6ListFooter;

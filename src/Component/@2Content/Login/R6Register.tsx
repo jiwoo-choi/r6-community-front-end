@@ -1,70 +1,53 @@
 import { Form, Button, Header, Message } from "semantic-ui-react";
-import React, { Dispatch, SetStateAction } from "react";
+import React from "react";
 import './R6Register.css'
 import { motion } from "framer-motion";
-import R6RegisterReactor, { RegisterInitialState, RegisterState } from "./R6RegisterReactor";
-import { filter , skip, distinctUntilChanged  } from "rxjs/operators";
 import _ from "lodash";
 import R6RegisterConfirmation from "./R6RegisterConfirmation";
 import Media from "react-media";
-import { withRouter, RouteComponentProps } from "react-router-dom";
+import { inject, observer } from "mobx-react";
+import RegisterStore from "../../Stores/RegisterStore";
 //#36393f
 //https://gist.github.com/barbiturat/49facf4eeec1e2a5352ff4fa6bbf7286
 //https://gist.github.com/barbiturat/49facf4eeec1e2a5352ff4fa6bbf7286
 // 김종민님 + 인프런 인터렉티브 웹<div className=""></div>
 
-class R6Register extends React.PureComponent<RouteComponentProps, RegisterState> {
 
-    reactor?: R6RegisterReactor | null;
+interface Props {
+    register?: RegisterStore;
+}
+
+@inject('register')
+@observer
+class R6Register extends React.PureComponent<Props> {
 
     idInput = React.createRef<HTMLInputElement>();
     pwdInput = React.createRef<HTMLInputElement>();
     pwd2Input = React.createRef<HTMLInputElement>();
     emailInput = React.createRef<HTMLInputElement>();
+ 
 
-    constructor(props:any) {
-        super(props);
-        this.state = RegisterInitialState;
-    }
-
-    UNSAFE_componentWillMount(){
-        this.reactor = new R6RegisterReactor(RegisterInitialState)        
-    }
-    
-    componentDidMount(){
-
-        // image scale change?
-        
-        if (this.reactor) {
-
-            this.reactor.disposedBy = this.reactor?.state.pipe(
-                filter((value,index) => { return value.isSuccess !== true}),
-                distinctUntilChanged(_.isEqual),
-                skip(1),
-            ).subscribe(
-                res => {
-                    this.setState({...res})
-                }
-            )
-            //isSuccess..
-            this.reactor.disposedBy = this.reactor?.state.pipe(
-                filter((value,index) => { return value.isSuccess === true}),
-                distinctUntilChanged(_.isEqual),
-            ).subscribe(
-                res => {
-                    this.setState({isSuccess : true })
-                }
-            )
-
-        }
-    }
-
-    componentWillUnmount(){
-        this.reactor?.disposeAll();
-        this.reactor = null;
+    clickHandler(){
+        this.props.register?.registerRequest(
+            this.idInput.current!.value,
+            this.pwdInput.current!.value,
+            this.pwd2Input.current!.value,
+            this.emailInput.current!.value,
+        )
     }
 
     render(){
+
+        const { 
+            idError,
+            pwdError,
+            pwd2Error,
+            isError,
+            isConfirmation,
+            errorMessage,
+            emailError,
+            isLoading,
+         } = this.props.register!
        return( 
         <>
     
@@ -82,10 +65,10 @@ class R6Register extends React.PureComponent<RouteComponentProps, RegisterState>
                 animate={{ scale: 1, opacity:1, y:'0%'}}
                 >
 
-                { this.state.isSuccess ? <R6RegisterConfirmation/> 
+                { !isConfirmation ? <R6RegisterConfirmation/> 
                 :
                 (<React.Fragment>
-                    <Form error={this.state.isError}>
+                    <Form error={isError}>
                         <Media query={{ maxWidth: 599 }}>
                             {matches =>
                                 matches ? (
@@ -97,41 +80,32 @@ class R6Register extends React.PureComponent<RouteComponentProps, RegisterState>
                         </Media>
                         <Message
                             error
-                            header={this.state.messageDesc}
+                            header={errorMessage}
+                            
                         />
-                        <Form.Field required error={this.state.isIdError}>
+                        <Form.Field required error={idError}>
                         <label>아이디</label>
                         <input placeholder='ID' ref={this.idInput}/>
                         </Form.Field>
-                        <Form.Field required error={this.state.isPwdError}>
+                        <Form.Field required error={pwdError}>
                         <label>비밀번호</label>
                         <input placeholder='Password' type={"password"} ref={this.pwdInput}/>
                         </Form.Field>
-                        <Form.Field required error={this.state.isPwd2Error}>
+                        <Form.Field required error={pwd2Error}>
                         <label>비밀번호 확인</label>
                         <input placeholder='Password' type={"password"} ref={this.pwd2Input}/>
                         </Form.Field>
-                        <Form.Field required error={this.state.isEmailError}>
+                        <Form.Field required error={emailError}>
                         <label>인증용 아이디</label>
                         <input placeholder='Email' type={"email"} ref={this.emailInput}/>
                         </Form.Field>
                     </Form>
 
-                    <Button id="button-top-margin" type='submit' fluid color={this.state.isError? "red" : "green"} loading={this.state.isValidated} disabled={this.state.isValidated}
-                    onClick={()=>{
-                        this.reactor?.dispatch(
-                            {
-                                type:"SUBMIT", 
-                                id : this.idInput.current!.value,
-                                email : this.emailInput.current!.value,
-                                pwd : this.pwdInput.current!.value,
-                                pwd2 : this.pwd2Input.current!.value,
-
-                            })
-                        }}>계속하기</Button>
+                    <Button id="button-top-margin" type='submit' fluid color={isError? "red" : "green"} loading={isLoading} disabled={isLoading}
+                    onClick={this.clickHandler.bind(this)}>계속하기</Button>
 
                     <div className="button-bottom-top"><a onClick={()=>{
-                        this.props.history.goBack();
+                        // this.props.history.goBack();
                     }}> 이미 계정이 있으신가요? </a> </div>
                     <div> 등록하는 순간 R6-Community 서비스의 <a>이용 약관</a>과 <a>개인정보 보호 정책</a>에 동의하게 됩니다. </div>
                     </React.Fragment>
@@ -147,4 +121,4 @@ class R6Register extends React.PureComponent<RouteComponentProps, RegisterState>
     }
 }
 
-export default withRouter(R6Register)
+export default R6Register

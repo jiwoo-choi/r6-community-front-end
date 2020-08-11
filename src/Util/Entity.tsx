@@ -23,7 +23,8 @@ export interface RANKBYREGION {
     rankStat: RANKAPI;
 }
 
-export interface ContentType {
+/** 포스트 타입입니다. */
+export interface PostContentType {
      postId:number;
      author:string;
      title:string;
@@ -35,6 +36,7 @@ export interface ContentType {
      recommend:boolean;
 }
 
+/** 커멘트 타입입니다 */
  export interface CommentType {
      commentId:number;
      username:string;
@@ -43,18 +45,20 @@ export interface ContentType {
      createdTime:string;
 }
 
+/** 포스트 `리스트` 타입입니다. */
+export interface ListType {
+    meta : Meta,
+    postList : ListElementType[]
+}
 
-export interface PostListType {
-    meta : 
-        {
-            currentPage: number
-            totalPage: number
-        },
-    postList : ListType[]
+/** 메타태그 */
+export interface Meta {
+    currentPage: number
+    totalPage: number
 }
     
-    
-export interface ListType {
+/** 포스트 `리스트`의 각 포스트 타입입니다. */
+export interface ListElementType {
      postId:number;
      recommendCnt:number;
      viewCnt:number;

@@ -16,7 +16,8 @@ const FLUIDDIV = styled.div`
 class R6PostWrite extends React.PureComponent<ForumReactorProp> {
     
     render(){
-        return <R6Editor reactor={this.props.reactor} ></R6Editor>
+        return null;
+        // <R6Editor reactor={this.props.reactor} ></R6Editor>
         // return null;
     }
 }

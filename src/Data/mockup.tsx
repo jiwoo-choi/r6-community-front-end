@@ -1,24 +1,5 @@
-import { CommentDataType } from "../Component/@2Content/Contents/R6Comment";
-import { RANKBYREGION, ListType, ContentType, PostListType } from "../Util/Entity";
+import { RANKBYREGION, ListType, PostContentType } from "../Util/Entity";
 
-export const commentMockup : CommentDataType[] = [
-    {
-        id:"안녕",
-        content: "반가워요",
-        meta: "어제 2시"
-    },
-    {
-        id:"와우",
-        content: "진짜요? 바로 갑니다",
-        meta: "2015-05-01"
-    },
-    {
-        id:"사실?",
-        content: "사실임??",
-        meta: "어제 2시"
-    },
-
-]
     
 export const searchResultMockUp : RANKBYREGION[]  =  [
     {
@@ -73,7 +54,7 @@ export const rankbyregionMockup : RANKBYREGION[] =
 
 
 
-export const listResultMockup : PostListType = 
+export const listResultMockup : ListType = 
 { 
     meta: {
         currentPage : 1,
@@ -96,7 +77,7 @@ export const listResultMockup : PostListType =
 
 
 
-export const postResultMockup : ContentType = 
+export const postResultMockup : PostContentType = 
 {
     "postId": 2,
     "author": "user1",

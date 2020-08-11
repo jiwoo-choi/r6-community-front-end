@@ -1,35 +1,12 @@
 
 import styled from 'styled-components'
-import React, { useState } from 'react'
-import { R6RankIcon } from '.'
+import React, { useState, useRef } from 'react'
+import { R6RankIcon } from '../../../../@Reusable-Component'
 import { Icon, Button } from 'semantic-ui-react'
 import R6TextArea from './R6TextArea'
-import { CommentType } from '../../Util/Entity'
+import { CommentType } from '../../../../../Util/Entity'
 import Moment from 'react-moment'
 
-
-interface Props {
-    /** childComment 여부. 재귀호출 */
-    /** 덧글 내용 */
-    comment: CommentType;
-    /** 수정가능한지 */
-    isEditable?: boolean;
-    /** 답글창이 열려있는지 */
-    isReplying?: boolean;
-    /** 날짜 */
-    date?: string;
-    /** 아이디 */
-    id?: string;
-    /** 프로필 */
-    profile?: string;
-    /** parent */
-    parentId?: string;
-    /** isBest */
-    isBest?: boolean;
-    isChild: boolean;
-    onSubmit?: (info: any) => void;
-
-}
 
 
 
@@ -104,14 +81,37 @@ const CHILDBACKGROUND = styled.div`
 `
 
 
+interface Props {
+    /** childComment 여부. 재귀호출 */
+    /** 덧글 내용 */
+    comment: CommentType;
+    /** 수정가능한지 */
+    isEditable?: boolean;
+    /** 답글창이 열려있는지 */
+    isReplying?: boolean;
+    /** 날짜 */
+    date?: string;
+    /** 아이디 */
+    id?: string;
+    /** 프로필 */
+    profile?: string;
+    /** parent */
+    parentId?: string;
+    /** isBest */
+    isBest?: boolean;
+
+    isChild: boolean;
+
+    onSubmit: (content:string, parentId: number) => void;
+
+}
+
+
 export default function R6Comment({ isChild, id, comment , onSubmit} : Props) {
 
     const [state, setState] = useState(false);
-    //comment group에서 관리해줘야함. setState에 대한 listenr를 막기위함.
-    //group에서 state를 관리할 수 있는 방법도있음. 열어줄지 안열어줄지..
-    //각자 state를 관리하기?
-    //답글달기 추가하기.
-    
+    let thisTextRef = useRef<HTMLTextAreaElement>(null);
+
     return (
         <COMMENTGRID>
 
@@ -127,20 +127,21 @@ export default function R6Comment({ isChild, id, comment , onSubmit} : Props) {
 
             { !isChild && 
                 <BUTTONAREA>
-                    <Button icon color={"black"} size={"mini"} compact onClick={()=>{setState(!state)}}>
+                    <Button icon color={"grey"} size={"mini"} compact onClick={()=>{setState(!state)}}>
                             <Icon name={"reply"}></Icon>
-                            &nbsp; 답글달기
+                            &nbsp;&nbsp; 답글달기
                     </Button>
                 </BUTTONAREA>
             }
             {
                 state && 
                 <CHILDBACKGROUND>
-
-                    <R6TextArea placeholder={`${comment.username} 에게 덧글 달기..` }/>
-
+                    <R6TextArea placeholder={`${comment.username} 에게 덧글 달기..` } textRef={(ref:any) => thisTextRef = ref}/>
                     <BUTTONGROUPAREA>
-                        <Button color={"green"} size={"small"} compact onClick={onSubmit}>
+                        <Button color={"green"} size={"small"} compact onClick={()=>{
+                            console.log(thisTextRef);
+                            onSubmit(thisTextRef.current!.value, comment.commentId)
+                            }}>
                                     작성하기
                         </Button>
                         <Button color={"grey"} size={"small"} compact onClick={()=>setState(false)}>
@@ -153,7 +154,7 @@ export default function R6Comment({ isChild, id, comment , onSubmit} : Props) {
             <CHILDCONTAINER>
                 {
                     comment.childComment.map( (value, index) => {
-                        return <R6Comment isChild={true} comment={value} key={comment.commentId+index+"_CHILD_COMMENT"}></R6Comment>
+                        return <R6Comment isChild={true} comment={value} key={comment.commentId+index+"_CHILD_COMMENT"} onSubmit={onSubmit}></R6Comment>
                     })
                 }
             </CHILDCONTAINER>

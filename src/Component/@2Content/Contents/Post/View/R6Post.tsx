@@ -1,20 +1,16 @@
 import React from "react";
-import ForumReactor, { ForumState, ForumReactorProps, ForumReactorProp, ForumStateInitialState } from "../../../../@0ForumReactor/ForumReactor";
 import styled from "styled-components";
 import { Viewer } from '@toast-ui/react-editor'
-import { withReactor, deepDistinctUntilChanged, DisposeBag } from 'reactivex-redux'
-import { Placeholder, Segment, Image, Header, Divider, Comment, Form, Button, TextArea } from "semantic-ui-react";
+import { Placeholder, Segment, Header, Divider, Button, Confirm } from "semantic-ui-react";
 import '@toast-ui/editor/dist/toastui-editor-viewer.css';
 import './R6Post.css';
 import Moment from "react-moment";
 import { CommentType } from "../../../../../Util/Entity";
-import PostReactor, { PostInitialState, PostState } from "./R6PostReactor";
-import { skip, distinctUntilChanged, map } from "rxjs/operators";
-import _ from "lodash";
-import { RouteComponentProps, withRouter } from "react-router-dom";
-import { interval } from "rxjs";
-import R6Comment from "../../../../@Reusable-Component/R6Comment";
-import R6TextArea from "../../../../@Reusable-Component/R6TextArea";
+import R6Comment from "./R6Comment";
+import R6TextArea from "./R6TextArea";
+import { observer, inject } from "mobx-react";
+import PostStore from "../../../../Stores/PostStore";
+import ForumStore from "../../../../Stores/ForumStore";
 
 const POSTAREA = styled.div`
     position: relative;
@@ -55,95 +51,54 @@ const BUTTONAREA = styled.div`
 `
 
 
-//goback...
-class R6Post extends React.PureComponent<ForumReactorProp & RouteComponentProps, ForumState & PostState> {
+const MODIFYBUTTONAREA = styled.div`
+    margin:14px 0px;
+`
+interface Props {
+    post?: PostStore;
+    forum?: ForumStore;
+}
 
-    disposeBag: DisposeBag | null = new DisposeBag();
-    reactor : PostReactor;
+@inject(({post, forum}) => ({ forum : forum, post: post}))
+@observer
+class R6Post extends React.PureComponent<Props> {
+
     commentInput = React.createRef<HTMLTextAreaElement>();
 
-    constructor(props:any) {
-        super(props)
-        this.reactor = new PostReactor(PostInitialState);
-        this.state = { ...this.props.reactor.getState() , ...PostInitialState}
-    }
-
     componentDidMount() {
-
-        this.disposeBag!.disposeOf = this.props.reactor.state.pipe(
-            map( res => res.postId ),
-            distinctUntilChanged(),
-        ).subscribe(
-            postId => this.props.reactor.dispatch({type:"CLICKPOST", postId: postId!})
-        )
-
-        this.disposeBag!.disposeOf = this.props.reactor.state.pipe(
-            map( res => res.isLoading ),
-            distinctUntilChanged(),
-        ).subscribe(
-            isLoading => {
-                this.setState({isLoading})
-            }
-        )
-
-        this.disposeBag!.disposeOf = this.props.reactor.state.pipe(
-            map( res => ({ post: res.post})),
-            distinctUntilChanged( ( prev, curr) => _.isEqual(prev.post, curr.post)),
-        ).subscribe(
-            res => this.setState({ post : res.post})
-        )        
-
-        this.disposeBag!.disposeOf = this.props.reactor.state.pipe(
-            map( res => ({ post: res.post})),
-            distinctUntilChanged( ( prev, curr) => _.isEqual(prev.post, curr.post)),
-        ).subscribe(
-            res => this.setState({ post : res.post})
-        )        
-
-
-        this.disposeBag!.disposeOf = this.reactor.state.pipe( 
-            map( res=> res.commentIsLoading ),
-            distinctUntilChanged(_.isEqual),
-        ).subscribe(
-            commentIsLoading => this.setState({ commentIsLoading })
-        )
-
-        this.disposeBag!.disposeOf = this.reactor.state.pipe( 
-            map( res=> res.commentIsError ),
-            distinctUntilChanged(_.isEqual),
-        ).subscribe(
-            commentIsError => this.setState({ commentIsError })
-        )
-
-        this.disposeBag!.disposeOf = this.reactor.state.pipe( 
-            map( res=> res.commentsList ),
-            distinctUntilChanged(_.isEqual),
-        ).subscribe(
-            commentsList => this.setState({ commentsList })
-        )
-
-    }
-
-
-    componentWillUnmount(){
-        this.disposeBag?.unsubscribe();
-        this.disposeBag = null;
+        this.props.post?.getPost();
     }
 
     commentList(comment : CommentType[]){
-        console.log(comment.map( (value, index) => {
-            return (
-                <R6Comment key={index+"_COMMENT"} comment={value}></R6Comment>
-              )
-        }))
-
+        
         return comment.map( (value, index) => {
             return (
-                <R6Comment key={index+"_COMMENT"} comment={value}></R6Comment>
+                <R6Comment key={index+"_COMMENT"} comment={value} onSubmit={this.onSubmit.bind(this)}></R6Comment>
               )
         })
     }
 
+    onSubmit(content:string, parentId: number){
+        this.props.post!.postComment( content, parentId )
+    }
+
+    handleOnClick(){
+        if (!this.props.forum!.isLogined) {
+            this.props.forum!.openLoginModal(true);
+        } else {
+            this.props.post!.postComment((this.commentInput as any).current.value)
+        }
+    } 
+
+    handleCancel(){
+        this.props.post!.setConfirmOpen(false);
+    }
+    handleOpen(){
+        this.props.post!.setConfirmOpen(true);
+    }
+    handleConfirm(){
+        this.props.post?.delete();        
+    }
     /**
      * 
                 <Comment key={"COMMENT_" + index}>
@@ -161,12 +116,10 @@ class R6Post extends React.PureComponent<ForumReactorProp & RouteComponentProps,
               </Comment>
      */
     render(){
-    
-        // const { author, title, content, commentList, createdTime , postId } = this.state;
-        const { isLoading , post } = this.state;
-        const commentsReactorList = this.state.commentsList;
+        const { postContent, isLoading, isCommentLoading, isConfirmOpened, countOfComments} = this.props.post!;
+        const { nickName } = this.props.forum!;
 
-        if (isLoading || !post ) {
+        if ( isLoading || !postContent ) {
             return (
                 <Segment loading>
                     <Placeholder>
@@ -185,30 +138,41 @@ class R6Post extends React.PureComponent<ForumReactorProp & RouteComponentProps,
             
             )
         } else {
-            const { author, title, content, commentList, createdTime, postId} = post!
-            const { commentIsLoading } = this.state;
-            console.log("comments test", this.state);
+            const { author, title, content, commentList, createdTime, postId} = postContent!
             return (
                 <>
                 
-                    <POSTAREA key={postId + "_KEY"}>
+                <Confirm
+                    open={isConfirmOpened}
+                    content='삭제하시겠습니까?'
+                    onCancel={this.handleCancel.bind(this)}
+                    onConfirm={this.handleConfirm.bind(this)}
+                />
 
+                    <POSTAREA key={postId + "_KEY"}>
                         <Header size={'huge'}>{title}</Header>
                         <SUBTITLEAREA>
                             <AUTHOR>{author}</AUTHOR>
                             <TIME><Moment fromNow>{createdTime}</Moment></TIME>
                         </SUBTITLEAREA>
+                        {
+                            nickName === author && 
+                            <MODIFYBUTTONAREA>
+                                <Button inverted color={"red"} onClick={this.handleOpen.bind(this)}> 삭제 </Button>
+                                <Button inverted color={"green"}> 수정 </Button>
+                            </MODIFYBUTTONAREA>
+                        }
+
                         <Divider />
 
                         <VIEWERAREA>
                             <Viewer initialValue={content}/>
                         </VIEWERAREA>
 
-                        <Header as='h2' dividing>
-                            덧글 {commentList.length} 개
+                        <Header key={"MY_KEY"} as='h2' dividing>
+                            덧글 { countOfComments } 개
                         </Header>
                         
-
                         <R6TextArea placeholder='덧글을 입력해주세요' textRef={ (ref) => this.commentInput = ref }/>
                         <BUTTONAREA>
                             <Button 
@@ -216,18 +180,9 @@ class R6Post extends React.PureComponent<ForumReactorProp & RouteComponentProps,
                                 labelPosition='left'
                                 icon='edit'
                                 color={"green"}
-                                disabled={this.state.commentIsLoading}
-                                loading={this.state.commentIsLoading}
-                                onClick={()=>{
-                                    
-                                    const {isLogined} = this.props.reactor.getState();
-                                    if (isLogined) {
-                                        this.reactor?.dispatch({type:"CLICKREPLY", postId: postId, content:(this.commentInput as any).current.value})
-                                    } else {
-                                        this.props.reactor.dispatch({type:"CLICKLOGINBUTTON"})
-                                    }
-                                    
-                                    }}/>
+                                disabled={isCommentLoading}
+                                loading={isCommentLoading}
+                                onClick={this.handleOnClick.bind(this)}/>
                             </BUTTONAREA>
 
                         {/* <Form>
@@ -255,7 +210,7 @@ class R6Post extends React.PureComponent<ForumReactorProp & RouteComponentProps,
                         
                         <React.Fragment>
                             {/* <R6Comment comment={commentsReactorList}></R6Comment> */}
-                            { commentsReactorList.length !== 0 ? this.commentList(commentsReactorList) : this.commentList(commentList) }
+                            { this.commentList(commentList) }
                             {/* <Comment.Group>
                                 { commentsReactorList.length !== 0 ? this.commentList(commentsReactorList) : this.commentList(commentList) }
                             </Comment.Group> */}
@@ -269,4 +224,4 @@ class R6Post extends React.PureComponent<ForumReactorProp & RouteComponentProps,
     }
 }
 
-export default withRouter(R6Post)
+export default R6Post

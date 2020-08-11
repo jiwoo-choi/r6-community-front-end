@@ -1,12 +1,11 @@
 import React from "react";
 import styled from 'styled-components'
-import { Button } from "semantic-ui-react";
-import { withReactor } from "reactivex-redux";
-import { ForumReactorProps, Topic, ForumReactorProp, ForumState } from "../@0ForumReactor/ForumReactor";
-import { withRouter, RouteComponentProps } from "react-router-dom";
+import { Button, Label } from "semantic-ui-react";
+import { Topic} from "../@0ForumReactor/ForumReactor";
 import { R6Button, R6ButtonGroup } from './R6Button'
 import { map, distinctUntilChanged, skip } from "rxjs/operators";
-
+import { observer, inject } from "mobx-react";
+import ForumStore from "../Stores/ForumStore";
 const NAVIGATIONSTYLE = styled.nav`
     max-width:1200px;
     height:70px;
@@ -80,63 +79,70 @@ const SUBNAVITEMS = styled.div`
   }
 `
 
-class R6Navigation extends React.Component<ForumReactorProp & RouteComponentProps, ForumState> {
+interface Props {
+    forum? : ForumStore;
+}
+
+@inject('forum')
+@observer
+class R6Navigation extends React.Component<Props> {
     
 
-    constructor(props: any) {
-        super(props);
-        this.state = this.props.reactor.getState();
+    // componentDidMount(){
+    //     this.props.reactor.state.pipe(
+    //         map( res => res.topic),
+    //         distinctUntilChanged(),
+    //         skip(1),
+    //     ).subscribe(
+    //         topic => this.setState({topic})
+    //     )
 
-    }
+    //     this.props.reactor.state.pipe(
+    //         map( res => res.isLogined),
+    //         distinctUntilChanged(),
+    //         skip(1),
+    //     ).subscribe(
+    //         isLogined => this.setState({isLogined})
+    //     )
+
+    //     this.props.reactor.state.pipe(
+    //         map( res => res.nickName),
+    //         distinctUntilChanged(),
+    //         skip(1),
+    //     ).subscribe(
+    //         nickName => this.setState({nickName})
+    //     )
+
+    // }
 
     handleToggle(value : Topic, url?: string){
-        this.props.reactor.dispatch({type:"SETTOPIC", newTopic: value})
-        if (url) {
-            this.props.history.push(`${url}`)
-        } else {
-            this.props.history.push(`/${value}`)
-        }
+        this.props.forum?.getList(value);
     }
 
-    componentDidMount(){
-        this.props.reactor.state.pipe(
-            map( res => res.topic),
-            distinctUntilChanged(),
-            skip(1),
-        ).subscribe(
-            topic => this.setState({topic})
-        )
+    handleBrandLogo(){
+        this.props.forum?.getList("free");
+    }
 
-        this.props.reactor.state.pipe(
-            map( res => res.isLogined),
-            distinctUntilChanged(),
-            skip(1),
-        ).subscribe(
-            isLogined => this.setState({isLogined})
-        )
-
-        this.props.reactor.state.pipe(
-            map( res => res.nickName),
-            distinctUntilChanged(),
-            skip(1),
-        ).subscribe(
-            nickName => this.setState({nickName})
-        )
-
+    handleLoginButton(){
+        this.props.forum?.openLoginModal(true);
     }
 
     render(){
 
-        const { topic, isLogined } = this.state;
+        const { topic, isLogined, nickName } = this.props.forum!;
 
         return(
             <React.Fragment>
                 <GLOBALNAV>
                     <NAVITEMS>
-                        <BRANDLOGO onClick={()=>{this.handleToggle("free", "/")}}> R6 Search - TALK </BRANDLOGO>
+                        <BRANDLOGO onClick={this.handleBrandLogo.bind(this)}> R6 Search - TALK </BRANDLOGO>
                         { !isLogined ? 
-                            (<Button secondary compact onClick={this.props.reactor.dispatchFn({type:"CLICKLOGINBUTTON"})}>로그인하기</Button>) :
-                            (<div> {this.state.nickName}님 안녕하세요! </div>)
+                            (<Button secondary compact onClick={this.handleLoginButton.bind(this)}>로그인하기</Button>) :
+                            (   <Label as='a' image>
+                                    <img src='https://react.semantic-ui.com/images/avatar/small/joe.jpg' />
+                                    {nickName}
+                                </Label>
+                            )
                         }
                     </NAVITEMS>
                 </GLOBALNAV>
@@ -154,4 +160,4 @@ class R6Navigation extends React.Component<ForumReactorProp & RouteComponentProp
     }
 }
 
-export default withRouter(R6Navigation);
+export default R6Navigation

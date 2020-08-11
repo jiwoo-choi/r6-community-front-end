@@ -20,7 +20,7 @@ describe( "Forum Reactor Test / Reactor Action -> Mutate -> State Test", () => {
         isLogined:false,
     }
 
-    let api = R6StatAPI.shared.api;
+    let api = xR6StatAPI.shared.api;
     beforeEach(() => {
         moxios.install(api);
       })

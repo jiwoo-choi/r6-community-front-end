@@ -33,6 +33,8 @@ export default function R6TextArea({placeholder, textRef} : Props) {
                 (textRef as React.RefObject<HTMLTextAreaElement>) = thisTextRef;
             }
         }
+
+
     }, [])
     return <TEXTAREA ref={thisTextRef} placeholder={placeholder}></TEXTAREA>
 

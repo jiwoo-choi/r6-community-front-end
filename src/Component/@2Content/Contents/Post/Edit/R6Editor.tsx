@@ -17,6 +17,11 @@ import { interval } from 'rxjs';
 import R6Ajax from '../../../../../Library/R6Ajax';
 import { map, distinctUntilChanged, filter, skip } from 'rxjs/operators';
 import { deepDistinctUntilChanged } from 'reactivex-redux';
+import { AjaxError, ajax } from 'rxjs/ajax';
+import { inject, observer } from 'mobx-react';
+import EditorStore from '../../../../Stores/EditorStore';
+import IDSearchStore from './R6IDSearch/IDSearchStore';
+import ForumStore from '../../../../Stores/ForumStore';
 
 const FLUIDDIV = styled.div`
     width:100%;
@@ -47,139 +52,58 @@ const EDITORAREA = styled.div`
 //     margin-bottom:20px;
 // }
 
-class R6Editor extends React.Component<ForumReactorProp & RouteComponentProps, EditorState>{
+
+interface Props {
+    editor?: EditorStore;
+    forum?: ForumStore;
+}
+
+@inject(({forum, editor})=> ({forum: forum, editor:editor }))
+@observer
+class R6Editor extends React.Component<Props>{
 
     private editorRef  = React.createRef<Editor>();
     private titleRef  = React.createRef<any>();
+    store? : IDSearchStore;
 
-    reactor : R6EditorReactor;
-
-    constructor(props:any){
-        super(props);
-        this.state = EditorinitialState;
-        this.reactor = new R6EditorReactor(EditorinitialState)
-    }
-    
     componentDidMount(){
+        this.getInstanceofEditor()?.addHook('addImageBlobHook', this.onAddImageBlob.bind(this))   
+    }
 
-        this.reactor?.state.pipe(
-            map( res => res.isLoading ),
-            distinctUntilChanged(),
-            skip(1),
-        ).subscribe(
-            isLoading => this.setState({isLoading})
-        )
-
-        this.reactor?.fireImmediately( 
-            value => value.type === "ADDRANKDATA" ,
-            (result: any) => {
-                this.insertTable( result.data, result.platform, result.id)
-            }
-        )
-
-        this.reactor?.fireImmediately( 
-            value => value.type === "SUCCESS" ,
-            (result: any) => {
-                this.props.reactor.dispatch({type:"SETPAGENO",pageId: result.postId })
-                this.props.history.push(`post/${result.postId}`)
-            }
-        )
-
-
-
-
-
-
-        // this.reactor?.state.pipe(
-        //     filter( value => value. === ""),
-        //     deepDistinctUntilChanged(),
-        // ).subscribe(
-        //     res => this.insertTable(res.)
-        // )
-        // this.reactor?.state.pipe(
-        //     map( res => res.data ),
-        //     distinctUntilChanged(),
-        //     skip(1),
-        // ).subscribe(
-        //     // data => this.insertTable(data)
-        // )
-        
-        
-        // const toBase64 = (file: any) => new Promise((resolve, reject) => {
-        //     const reader = new FileReader();
-        //     reader.readAsDataURL(file);
-        //     reader.onload = () => resolve(reader.result);
-        //     reader.onerror = error => reject(error);
-        // });
-
-        // interval(1000).subscribe(
-        //     // res=>console.log(this.editorRef.current?.getInstance().getHtml())
-        // )
-
-        // this.getInstanceofEditor()?.addHook('addImageBlobHook', ( a,b) => {
-        //     // const reader = new FileReader();
-        //     // const h = reader.readAsDataURL(a);
-        //     // console.log(h);
-        //     var formData = new FormData();
-        //     formData.append('files', a);
-        //     formData.append('content', "안녕");
-        //     formData.append('type', "free");
-        //     formData.append('title', "이미지테스트다");
-        //     R6Ajax.shared.post('post', formData, "multipart", true).subscribe();
-
-        //     // let formData = new FormData();
-        //     // formData.append('image', a);
-        //     // console.log(formData);
-        // })
-
-        // this.reactor?.dispatch({type:"CLICKREGISTERBUTTON", })
+    componentWillMount(){
+        this.store = new IDSearchStore();
     }
 
     onAddImageBlob(blob: any, callback: any) {
-        //insert blob..
-        //and set data...
-        // console.log(blob);
-        // this.uploadImage(blob);
-        // this.editorRef.current?.getInstance().setHtml(
-        //     `<img src= ${blob} >`
-        // )
-        //image insert
-        //then we can add something..?
 
-        // callback("https://miro.medium.com/max/1400/1*PIuIAKbuu-QaoAvVk02PiQ.gif", 'alt text');
-        // uploadImage(blob)
-        //     .then(response => {
-        //         if (!response.success) {
-        //             throw new Error('Validation error');
-        //         }
+        this.uploadImage(blob)
+            .then(response => {
+                callback(response.imageUrl[0], 'alt text');
+            }).catch(error => {
+                console.log(error);
+            });
+    }
     
-        //         callback(response.data.url, 'alt text');
-        //     }).catch(error => {
-        //         console.log(error);
-        //     });
-    };
-    
-
     uploadImage(blob: any) {
-        
-        let formData = new FormData();
-        // file in a 'multipart/form-data' request
-        // formData.append(0, blob, blob.name);
-        // console.log(formData);
-        // data uri
 
-        // return fetch('/upload/image', {
-        //     method: 'POST',
-        //     body: formData
-        // }).then(response => {
-        //     if (response.ok) {
-        //         return response.json();
-        //     }
-    
-        //     throw new Error('Server or network error');
-        // });
+        let formData = new FormData();
+        formData.append('imageFiles', blob);
+
+        return fetch('https://r6-search.me/api/c/image', {
+            method: 'POST',
+            body: formData,
+            headers : { "Authorization" : "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0LWFjY291bnQiLCJpYXQiOjE1OTcwMjUxMDYsImV4cCI6MTU5NzExMTUwNn0.vRFds9I325-I4UV_lPikSaGJWc6PaESzZe4Fuac-aIU"}
+        }).then(response => {
+            if (response.ok) {
+                return response.json();
+            } else {
+                throw new Error('Server or network error');
+            }
+        }).catch( (err) => {
+            throw new Error('Server or network error');
+        })
         //https://junwoo45.github.io/2020-07-28-chrome_devtools/?fbclid=IwAR2JRCQRpluIn6JmN2mne55mUASDLWxWVxoj3L2beX2a7CPQmjddOIldrS4
-    };
+    }
 
     
     private getInstanceofEditor() {
@@ -224,15 +148,46 @@ class R6Editor extends React.Component<ForumReactorProp & RouteComponentProps, E
         </tbody>
         </table>
         `
-        this.getInstanceofEditor()?.setHtml(newone
-        , true)
+        this.getInstanceofEditor()?.setHtml(newone, true)
     }
 
     
+    handleSubmit(){
+        /**
+         * 
+            const { isLogined } = this.props.reactor.getState();
+            if (!isLogined) {
+                this.props.reactor?.dispatch({type:"CLICKLOGINBUTTON"})
+            } else {
+                const html: string = (this.getHtml()) ? this.getHtml()! : ""
+                this.reactor?.dispatch({type:"CLICKREGISTERBUTTON", title: this.titleRef.current!.inputRef.current.value, content:html, topic: topic})
+            }
+         */
+
+        const regex = /https:\/\/d13wxwpxw6qcg\.cloudfront\.net\/(.+?)(\"|\))/g;
+        const str = this.getHtml()!;
+        let m;
+        let imgSrc = [];
+        while ((m = regex.exec(str)) !== null) {
+            
+            if (m.index === regex.lastIndex) {
+                regex.lastIndex++;
+            }
+
+            if (m.length === 3) {
+                imgSrc.push("https://d13wxwpxw6qcg.cloudfront.net/"+m[1]);
+            }
+        }
+        // const value = regExp.exec(this.getHtml()!);
+        // console.log(value);
+        // console.log(this.getHtml()!);
+        this.props.editor?.upload(this.titleRef.current!.inputRef.current.value, str, imgSrc);
+    }
+    
     render(){
     
-            const { topic } = this.props.reactor.getState();
-            const { isLoading } = this.state;
+            const { topic } = this.props.forum!
+            const { isLoading } = this.props.editor!
 
             return(
 
@@ -247,9 +202,8 @@ class R6Editor extends React.Component<ForumReactorProp & RouteComponentProps, E
                 </FLUIDDIV>
     
                 <FLUIDDIV>
-
                 { topic === "together" && 
-                    <R6IDSearch reactor={this.reactor} ></R6IDSearch>
+                    <R6IDSearch dataClicked={this.insertTable.bind(this)} store={this.store!}></R6IDSearch>
                 }
                 </FLUIDDIV>
 
@@ -265,17 +219,8 @@ class R6Editor extends React.Component<ForumReactorProp & RouteComponentProps, E
     
                 <FLUIDDIV>
                     <BUTTONGROUP>
-                        <Button size={"big"} disabled={this.state.isLoading} onClick={()=> {this.props.history.goBack()}}> 취소하기 </Button>
-                        <Button size={"big"} loading={this.state.isLoading} disabled={this.state.isLoading} positive onClick={()=>{ 
-
-                            const { isLogined } = this.props.reactor.getState();
-                            if (!isLogined) {
-                                this.props.reactor?.dispatch({type:"CLICKLOGINBUTTON"})
-                            } else {
-                                const html: string = (this.getHtml()) ? this.getHtml()! : ""
-                                this.reactor?.dispatch({type:"CLICKREGISTERBUTTON", title: this.titleRef.current!.inputRef.current.value, content:html, topic: topic})
-                            }
-                        }}> 등록하기 </Button>
+                        <Button size={"big"} disabled={isLoading}> 취소하기 </Button>
+                        <Button size={"big"} loading={isLoading} disabled={isLoading} positive onClick={this.handleSubmit.bind(this)}> 등록하기 </Button>
                     </BUTTONGROUP>
                 </FLUIDDIV>
             </CONTAINER>
@@ -285,4 +230,4 @@ class R6Editor extends React.Component<ForumReactorProp & RouteComponentProps, E
     
 }
 
-export default withRouter(R6Editor)
+export default R6Editor

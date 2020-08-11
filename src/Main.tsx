@@ -9,16 +9,6 @@ import {
   R6Footer
 } from './Component';
 
-import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
-  Link,
-  RouteComponentProps,
-  withRouter,
-  Redirect,
-} from "react-router-dom";
-
 import { createPortal } from "react-dom";
 
 
@@ -32,8 +22,24 @@ import { Divider, Portal } from 'semantic-ui-react';
 import { R6Login, R6Register } from './Component/@2Content/Login';
 import R6Ajax from './Library/R6Ajax';
 
+
+import createBrowserHistory from 'history/createBrowserHistory';
+import { Provider } from 'mobx-react';
+import { RouterStore, syncHistoryWithStore } from 'mobx-react-router';
+import {
+  BrowserRouter as Router,
+  Switch,
+  Route,
+  Link,
+  RouteComponentProps,
+  withRouter,
+  Redirect,
+} from "react-router-dom";
+
+
+
 const ListComponent = lazy( () => import('./Component/@2Content/Contents/List/R6List'))
-const EditorComponent = lazy( () =>  import('./Component/@2Content/Contents/Post/Edit/R6PostWrite'))
+const EditorComponent = lazy( () =>  import('./Component/@2Content/Contents/Post/Edit/R6Editor'))
 const PostComponent = lazy( () =>  import('./Component/@2Content/Contents/Post/View/R6Post'))
 
 const SECTIONWRAPPER = styled.div`
@@ -52,6 +58,7 @@ const PADDER = styled.div`
 
 
 
+
 class Main extends React.PureComponent<RouteComponentProps> {
 
   reactor: ForumReactor;
@@ -61,7 +68,8 @@ class Main extends React.PureComponent<RouteComponentProps> {
   constructor(props:RouteComponentProps){
 
     super(props);
-
+    
+    
     let regexp = new RegExp(`\/[a-z]{1,}|\/`);
     let pathname = this.props.location.pathname;
     let progressed = regexp.exec(pathname);
@@ -108,24 +116,22 @@ class Main extends React.PureComponent<RouteComponentProps> {
     return(
       <React.Fragment>
 
-         <R6Navigation reactor={this.reactor}></R6Navigation>
-         <R6Login reactor_control={this.reactorControl}></R6Login>
-
+         <R6Navigation></R6Navigation>
+         <R6Login></R6Login>
          <PADDER>
           <Switch>
 
               <Route path={["/","/:type"]}  exact >
-                <ListComponent reactor={this.reactor}/>
+                <ListComponent/>
               </Route>
 
               <Route path="/:style/post/:postid">
-                <PostComponent reactor={this.reactor}/>
+                <PostComponent/>
               </Route>
 
               <Route path="/:style/editor">
-                <EditorComponent reactor={this.reactor}/>
+                <EditorComponent/>
               </Route>
-              
 
               <Route path="*">
                 <Page404></Page404>

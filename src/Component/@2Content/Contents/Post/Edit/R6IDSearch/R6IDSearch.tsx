@@ -1,16 +1,14 @@
 import React from "react";
 import './R6IDSearch.css'
-import {  Subject, } from "rxjs";
-import { debounceTime, map, tap, distinctUntilChanged, skip } from "rxjs/operators";
-import {  deepDistinctUntilChanged } from "reactivex-redux";
-import R6IDSearchReactor, { R6SearchinitialState, SearchState, SearchAction } from "./R6IDSearchReactor";
-import { isError } from "lodash";
+import {  Subject, from, Subscription, } from "rxjs";
 import {R6RankIcon} from "../../../../../@Reusable-Component";
 import styled from "styled-components";
 import { ReactComponent as EmptyBox } from './empty-box.svg'
-import { RANKBYREGION, GENERALAPI } from "../../../../../../Util/Entity";
+import { RANKBYREGION, RANKAPI } from "../../../../../../Util/Entity";
 import { Icon } from "semantic-ui-react";
-import R6EditorReactor from "../R6EditorReactor";
+import IDSearchStore from "./IDSearchStore";
+import { toStream } from 'mobx-utils';
+import { observer } from "mobx-react";
 
 const RANK_CONTAINER = styled.div`
     display:flex;
@@ -46,82 +44,25 @@ const CONTENT_PART = styled.div`
     
 `;
 
+interface Props {
+    dataClicked: (data: RANKAPI, platform: string, id : string) => void;
+    store: IDSearchStore;
+}
+  
 
+@observer
+class R6IDSearch extends React.PureComponent<Props> {
 
-class R6IDSearch extends React.PureComponent<{reactor? : R6EditorReactor}, SearchState> {
+    subscription! : Subscription;
 
-    reactor?: R6IDSearchReactor;
-    subject!: Subject<any>;
-
-    constructor(props:any) {
-        super(props)
-        this.state = R6SearchinitialState;
+    componentDidMount() {
+        this.subscription = from(toStream(() => this.props.store.searchText))
+        .subscribe(this.props.store.search)
     }
 
-    componentWillMount(){
-        this.reactor = new R6IDSearchReactor(R6SearchinitialState);
-        this.subject = new Subject();
-
-        this.subject.pipe( 
-            distinctUntilChanged(),
-            tap ( value => this.reactor?.dispatch({type: "WRITETEXT", text:value })),
-            debounceTime(500),
-            map( value => ({type:"INVIS_SEARCHLIST", text: value } as SearchAction ))
-        ).subscribe(this.reactor?.action)
-    }
-
-    componentDidMount(){
-
-
-        this.reactor?.state.pipe(
-            map((value) => value.isLoading ),
-            deepDistinctUntilChanged(),
-            skip(1),
-        ).subscribe(
-            isLoading => this.setState({isLoading})
-        )
-
-        this.reactor?.state.pipe(
-            map((value) => value.result ),
-            deepDistinctUntilChanged(),
-            skip(1),
-        ).subscribe(
-            result => this.setState({result})
-        )
-
-        this.reactor?.state.pipe(
-            map((value) => value.isError ),
-            deepDistinctUntilChanged(),
-            skip(1),
-        ).subscribe(
-            isError => this.setState({isError})
-        )
-
-        this.reactor?.state.pipe(
-            map((value) => value.isActive ),
-            deepDistinctUntilChanged(),
-            skip(1),
-        ).subscribe(
-            isActive => this.setState({isActive})
-        )
-
-        this.reactor?.state.pipe(
-            map((value) => value.value ),
-            deepDistinctUntilChanged(),
-            skip(1),
-        ).subscribe(
-            value => this.setState({value})
-        )
-
-        this.reactor?.state.pipe(
-            map((value) => value.resultQuery ),
-            deepDistinctUntilChanged(),
-            skip(1),
-        ).subscribe(
-            resultQuery => this.setState({resultQuery})
-        )
-
-
+    componentWillUnmount(){
+        this.props.store.unsubscribe();
+        this.subscription.unsubscribe();
     }
 
     getCell(list : RANKBYREGION[][]) {   
@@ -129,14 +70,9 @@ class R6IDSearch extends React.PureComponent<{reactor? : R6EditorReactor}, Searc
         return list.map( (value, index) => {
             if (value.length > 0) {
                 return (
-                    //this.props.reactor?.dispatch({type:"SELECTRANK", data: value[0]})
-                    <div className="autocomplete-cell" key={"CELL_"+index} onMouseDown={()=>{ this.props.reactor?.dispatch(
-                        { 
-                            type:"SELECTRANK", 
-                            data: value[0].rankStat,
-                            id: this.reactor!.getState().value,
-                            platform: lists[index]
-                        })}}> 
+                    <div className="autocomplete-cell" key={"CELL_"+index} onMouseDown={()=>{ 
+                        this.props.dataClicked(value[0].rankStat, lists[index], this.props.store.resultQuery);
+                        }}> 
                         <div className="tag">
                             {lists[index]} 서버 
                         </div>
@@ -215,18 +151,20 @@ class R6IDSearch extends React.PureComponent<{reactor? : R6EditorReactor}, Searc
     }
 
     handleChange(event: React.ChangeEvent<HTMLInputElement>) {
-        this.subject.next(event.target.value)
+        this.props.store.setText(event.target.value);
     }
 
+    handleFoucs(){
+        this.props.store.setActive(true);
+    }
+
+    handleBlur(){
+        this.props.store.setActive(false);
+    }
+
+    
     render(){
-        if (!this.props) {
-            console.warn('R6IDSEARCH NOT LOADED')
-            return null
-        } else {
-
-            const localReactor = this.reactor!;
-            const { value , result, isLoading, resultQuery, isActive } = localReactor.currentState;
-
+        const { searchText, isActive, result, isLoading, resultQuery } = this.props.store;
             return(
                 <>
                     <div className="search-input">
@@ -234,16 +172,15 @@ class R6IDSearch extends React.PureComponent<{reactor? : R6EditorReactor}, Searc
                         <input 
                             className="r6idsearch"
                             placeholder="전적을 바로 검색해보세요."
-                            // onChange
-                            onFocus={()=>{localReactor.dispatch({type:"CLICKSEARCH"})}}
-                            onBlur={()=>{localReactor.dispatch({type:"CANCELSEARCH"})}}
-                            value={value}
+                            onFocus={this.handleFoucs.bind(this)}
+                            onBlur={this.handleBlur.bind(this)}
+                            value={searchText}
                             onChange={this.handleChange.bind(this)}
                             />
                             { isActive && 
                                 <div className="cellContainer">
                                     {
-                                        this.getList(result, value, isLoading, resultQuery)
+                                        this.getList(result, searchText, isLoading, resultQuery)
                                     }
                                 </div> 
                             } 
@@ -251,56 +188,7 @@ class R6IDSearch extends React.PureComponent<{reactor? : R6EditorReactor}, Searc
     
                 </>
             )
-        }
     }
+    
 }
 export default R6IDSearch
-
-        // this.reactor?.state.pipe(
-        //     map((value) => value.isLoading ),
-        //     deepDistinctUntilChanged(),
-        // ).subscribe(
-        //     isLoading => this.setState({isLoading})
-        // )
-
-        // this.reactor?.state.pipe(
-        //     map((value) => value.result ),
-        //     deepDistinctUntilChanged(),
-        // ).subscribe(
-        //     result => this.setState({result})
-        // )
-
-        // this.reactor?.state.pipe(
-        //     map((value) => value.isError ),
-        //     deepDistinctUntilChanged(),
-        // ).subscribe(
-        //     isError => this.setState({isError})
-        // )
-
-        // this.reactor?.state.pipe(
-        //     map((value) => value.isActive ),
-        //     deepDistinctUntilChanged(),
-        // ).subscribe(
-        //     isActive => this.setState({isActive})
-        // )
-
-        // this.reactor?.state.pipe(
-        //     map((value) => value.value ),
-        //     deepDistinctUntilChanged(),
-        // ).subscribe(
-        //     value => this.setState({value})
-        // )
-
-        // this.reactor?.state.pipe(
-        //     map((value) => value.resultQuery ),
-        //     deepDistinctUntilChanged(),
-        // ).subscribe(
-        //     resultQuery => this.setState({resultQuery})
-        // )
-
-
-// this.getList([], this.state.value , this.state.isLoading, this.state.isActive)
-
-
-  
- 

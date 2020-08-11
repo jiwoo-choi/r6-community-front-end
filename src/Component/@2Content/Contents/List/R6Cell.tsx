@@ -1,8 +1,7 @@
 import React from "react";
 import styled from 'styled-components';
-import { ListType } from "../../../../Util/Entity";
+import { ListElementType } from "../../../../Util/Entity";
 import Moment from 'react-moment'
-import { Label } from "semantic-ui-react";
 
 
 const CELLSTYLE = styled.div<{isNotice: boolean}>`
@@ -41,7 +40,8 @@ const GRIDTITLE = styled.div`
 
 
 const TITLEAREA = styled.div`
-    font-size:1.5rem;
+    height:100%;
+    font-size:1.3rem;
     font-weight:bold;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -90,7 +90,7 @@ const RECOMMENDEDFLEX = styled.div<{isNotice: boolean}>`
     }
 `
 //
-export default class R6Cell extends React.Component<{data : ListType, isNotice:boolean, onClick:()=>void}> {
+export default class R6Cell extends React.Component<{data : ListElementType, isNotice:boolean, onClick:()=>void}> {
     
     render(){
         return (

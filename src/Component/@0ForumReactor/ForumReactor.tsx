@@ -2,7 +2,7 @@ import { Observable , concat, of  } from "rxjs";
 import { ajax } from "rxjs/ajax";
 
 import { takeUntil, map,  filter, tap  } from "rxjs/operators";
-import { ListType, ContentType, PostListType, CommentType } from "../../Util/Entity";
+import { ListType, CommentType, PostContentType } from "../../Util/Entity";
 import { catchErrorJustReturn } from "../../Library/RxJsExtension";
 import { Reactor, ReactorControlProps,  ReactorControlType } from "reactivex-redux";
 import { listResultMockup } from "../../Data/mockup";
@@ -102,7 +102,7 @@ export interface FETCHLIST {
 
 export interface FETCHPOST {
     type: typeof FETCHPOST,
-    post: ContentType,
+    post: PostContentType,
 }
 
 export interface TOPICCHANGE {
@@ -136,11 +136,11 @@ type ForumMutation = SETLOADING | FETCHLIST | FETCHPOST  | TOPICCHANGE | LOGINMO
 export interface ForumState {
     topic : Topic,
     page: number,
-    postList?: PostListType;
+    postList?: ListType;
     list: ListType[],
     isLoading:boolean,
     isError:boolean,
-    post?: ContentType,
+    post?: PostContentType,
     postId: number,
     isLogined: boolean,
     isLoginModal: boolean;
@@ -182,36 +182,35 @@ export default class ForumReactor extends Reactor<ForumAction, ForumState, Forum
 
         case "TOPICLISTREQUSET":
             return concat( 
-                of<ForumMutation>({type:"SETLOADING", isLoading: true}),
-                this.fetchList(action.newTopic).pipe(
-                    takeUntil(this.action.pipe(filter((value)=> {
-                        return value.type === action.type
-                    }))),
-                    map<PostListType, ForumMutation>( res => {
-                        return {type:"FETCHLIST", list: res.postList, page: 1 } 
-                    }),
-                ))
-
+                // of<ForumMutation>({type:"SETLOADING", isLoading: true}),
+                // this.fetchList(action.newTopic).pipe(
+                //     takeUntil(this.action.pipe(filter((value)=> {
+                //         return value.type === action.type
+                //     }))),
+                    // map<PostListType, ForumMutation>( res => {
+                    //     return {type:"FETCHLIST", list: res.postList, page: 1 } 
+                    // }),
+                )
         case "CLICKPAGE":
             return concat(
                 //is Loading
                 of<ForumMutation>({type:"SETLOADING", isLoading: true}),
                 //fetching List
-                this.fetchList(this.currentState.topic, action.newPage).pipe(
-                    takeUntil(this.action.pipe(filter(value => value === action))),
-                    map<PostListType, ForumMutation>( res => {
-                        return {type:"FETCHLIST", list: res.postList, page: 1 } 
-                    })
-                ),
+                // this.fetchList(this.currentState.topic, action.newPage).pipe(
+                //     takeUntil(this.action.pipe(filter(value => value === action))),
+                //     map<PostListType, ForumMutation>( res => {
+                //         return {type:"FETCHLIST", list: res.postList, page: action.newPage } 
+                //     })
+                // ),
                 of<ForumMutation>({type:"SETLOADING", isLoading: false}),
             )
 
         case "CLICKPOST":
             return concat(
             of<ForumMutation>({type:"SETLOADING", isLoading: true}),
-            this.fetchPost(action.postId).pipe(
-                map<ContentType, ForumMutation>( res => ({type:"FETCHPOST", post : res}))
-            ),
+            // this.fetchPost(action.postId).pipe(
+            //     map<ContentType, ForumMutation>( res => ({type:"FETCHPOST", post : res}))
+            // ),
             )
 
         case "CLICKLOGINBUTTON":
@@ -228,8 +227,6 @@ export default class ForumReactor extends Reactor<ForumAction, ForumState, Forum
 
             )
         }
-
-
     }
 
     reduce(state: ForumState, mutation: ForumMutation): ForumState {
@@ -245,9 +242,10 @@ export default class ForumReactor extends Reactor<ForumAction, ForumState, Forum
                 newState.postId = mutation.pageId;
                 return newState;
 
-                case "SETLOADING":
-                newState.isLoading = mutation.isLoading
-                return newState
+            case "SETLOADING":
+            newState.isLoading = mutation.isLoading
+            return newState
+
             case "FETCHLIST":
                 newState.isLoading = false;
                 newState.list = mutation.list;
@@ -280,12 +278,12 @@ export default class ForumReactor extends Reactor<ForumAction, ForumState, Forum
         }
     }
    
-    fetchList(topic: Topic, page: number = 1) : Observable<PostListType> {
-        return ajax.getJSON<PostListType>(`https://www.r6-search.me/api/c/topic/${topic}?page=${page}`)
+    fetchList(topic: Topic, page: number = 1) : Observable<ListType> {
+        return ajax.getJSON<ListType>(`https://www.r6-search.me/api/c/topic/${topic}?page=${page}`)
     }
 
-    fetchPost(postId: number) : Observable<ContentType> {
-        return ajax.getJSON<ContentType>(`https://www.r6-search.me/api/c/post/${postId}`)
+    fetchPost(postId: number) : Observable<PostContentType> {
+        return ajax.getJSON<PostContentType>(`https://www.r6-search.me/api/c/post/${postId}`)
     }
 
  }

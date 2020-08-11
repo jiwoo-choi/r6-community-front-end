@@ -1,58 +1,22 @@
 import React from "react"
 import { Placeholder, Segment } from "semantic-ui-react";
-import { ForumReactorProps, Topic, ForumState, ForumReactorProp, ForumStateInitialState } from "../../../@0ForumReactor/ForumReactor"
 import R6Cell from "./R6Cell";
-import { ListType } from "../../../../Util/Entity";
-import { withReactor, DisposeBag } from "reactivex-redux";
-import { withRouter, RouteComponentProps } from "react-router-dom";
-import { map, distinctUntilChanged, skip } from "rxjs/operators";
+import { ListElementType } from "../../../../Util/Entity";
 import R6ListFooter from "./R6ListFooter";
+import { inject, observer } from "mobx-react";
+import ForumStore from "../../../Stores/ForumStore";
 
-export class R6List extends React.PureComponent<ForumReactorProp & RouteComponentProps, ForumState>{
 
-    disposeBag : DisposeBag | null = new DisposeBag();
-    
-    constructor(props:any) {
-        super(props);
-        this.state = this.props.reactor.getState();
-    }
+interface Props { 
+    forum? : ForumStore
+}
+
+@inject('forum')
+@observer
+export class R6List extends React.PureComponent<Props>{
 
     componentDidMount(){
-
-        this.disposeBag!.disposeOf = this.props.reactor.state.pipe(
-            map( res=> res.topic ),
-            distinctUntilChanged()
-        ).subscribe(
-            res => this.props.reactor.dispatch({type:"TOPICLISTREQUSET", newTopic : res})
-        )
-        
-        this.disposeBag!.disposeOf = this.props.reactor.state.pipe(
-            map( res => res.isLoading) ,
-            distinctUntilChanged(),
-        ).subscribe(
-            isLoading => this.setState({isLoading})
-        )
-
-        this.disposeBag!.disposeOf = this.props.reactor.state.pipe(
-            map( res => res.list) ,
-            distinctUntilChanged(),
-            skip(1),
-        ).subscribe(
-            list => this.setState({list})
-        )
-
-        this.disposeBag!.disposeOf = this.props.reactor.state.pipe(
-            map( res => res.isError) ,
-            distinctUntilChanged(),
-            skip(1),
-        ).subscribe(
-            isError => this.setState({isError})
-        )
-    }
-
-    componentWillUnmount(){
-        this.disposeBag!.unsubscribe();
-        this.disposeBag = null;
+        this.props.forum?.getList();
     }
 
     public getDummy( numberOfCells : number){
@@ -71,19 +35,16 @@ export class R6List extends React.PureComponent<ForumReactorProp & RouteComponen
         }
         return dummy
     }
-
-    public getList( cellData : ListType[]) {
-
-        let pathname = this.props.location.pathname === "/" ? "/free" : this.props.location.pathname
-
+    
+    handleCell(postId: number){
+        this.props.forum?.goPost(postId)
+    }
+    
+    public getList( cellData : ListElementType[]) {
         let cell = [];
         for (let i = 0 ; i < cellData.length ; i++) {
             cell.push( 
-                <R6Cell onClick={ ()=>{
-                    // this.props.history.push('/login')
-                    this.props.reactor.dispatch({type:"SETPAGENO", pageId: cellData[i].postId})
-                    this.props.history.push(`${pathname}/post/${cellData[i].postId}`)
-                }} isNotice={cellData[i].notice} key={this.state.topic+"_CELL_"+i} data={cellData[i]}/>
+                <R6Cell onClick={ ()=>{ this.handleCell(cellData[i].postId)}} isNotice={cellData[i].notice} key={this.props.forum?.topic +"_CELL_"+i} data={cellData[i]}/>
             )
         }
         return cell
@@ -91,7 +52,7 @@ export class R6List extends React.PureComponent<ForumReactorProp & RouteComponen
     
     render(){
 
-        const { isLoading, list, isError,} = this.state;
+        const { list, isLoading, isError } = this.props.forum!;
 
         if ( isLoading  ) {
         return (
@@ -99,20 +60,21 @@ export class R6List extends React.PureComponent<ForumReactorProp & RouteComponen
                 {this.getDummy(5)}
             </>
             )
-        } else if (list.length === 0 && isError) { 
-            return <div> 에러 </div>
+        } else if (isError) {
+            return <div>에러</div>
         } else {
             return (
                 <>
                     {this.getList(list)}
-                    <R6ListFooter reactor={this.props.reactor}></R6ListFooter>
+                    <R6ListFooter ></R6ListFooter>
                 </>
             )
+ 
         }
+
     }
 }
 
-export default withRouter(R6List);
-// export default withRouter(withReactor(R6List, (state) => ({isLoading: state.isLoading, list: state.list, isError: state.isError})));
+export default R6List;
 
 

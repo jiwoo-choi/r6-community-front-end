@@ -8,7 +8,6 @@ export {
 
 export {
     R6Post,
-    R6IDSearchReactor,
     R6IDSearch,
     R6PostWrite,
     R6EditroReactor,

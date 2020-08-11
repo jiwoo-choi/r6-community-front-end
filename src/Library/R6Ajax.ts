@@ -21,7 +21,7 @@ export default class R6Ajax {
     }
 
     accessToken? : string;
-    baseUrl = "http://r6-search.me"
+    baseUrl = "https://r6-search.me"
     baseURLWithAPIVersion = this.baseUrl + "/api/c/" 
 
     id?: string;
@@ -68,9 +68,24 @@ export default class R6Ajax {
         // try to access -> 403 fail -> access token update...
     }
 
+    delete(url: string, headers?:Object | "json" | "multipart", withAccessToken: boolean = false) : Observable<AjaxResponse> {
+        const {href} = new URL(url, this.baseURLWithAPIVersion);
+        return ajax.delete(href, this.getHeader(headers, withAccessToken))
+    }
+
+    put(url: string, body? : any | HTMLFormElement, headers?:Object | "json" | "multipart", withAccessToken: boolean = false) : Observable<AjaxResponse> {
+        const {href} = new URL(url, this.baseURLWithAPIVersion);
+        return ajax.put(href, body, this.getHeader(headers,withAccessToken))
+    }
+
     getJson<T>(url: string, headers?: Object | "json" | "multipart") : Observable<T> {
         const {href} = new URL(url, this.baseURLWithAPIVersion);
         return ajax.getJSON(href, this.getHeader(headers, false))
+    }
+
+    imagePost(blob:Blob) {
+        const {href} = new URL('image', this.baseURLWithAPIVersion);
+        return ajax.post(href, {imageFiles: [blob]} , this.getHeader(undefined,true))
     }
 
 

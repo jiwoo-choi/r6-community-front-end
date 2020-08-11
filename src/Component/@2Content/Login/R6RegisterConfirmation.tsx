@@ -24,7 +24,7 @@ function R6RegisterConfirmation({ history } : RouteComponentProps) {
                         <Header size={"small"}> 회원가입 인증메일을 보냈어요! </Header>
                         <span> 메일이 도착하지 않았다면, 스팸함도 체크해주세요! </span>
                         <R6LottieLoader key={"1"} path={"https://assets1.lottiefiles.com/packages/lf20_y9qOnk.json"} speed={0.8} width={150} height={150}/>
-                        <Button fluid color="green" onClick={()=> history.push('/')}> 돌아가기 </Button>
+                       <Button fluid color="green" onClick={()=> history.push('/')}> 돌아가기 </Button>
                         </>
                     ) : (
                         <>

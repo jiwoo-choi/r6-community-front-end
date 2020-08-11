@@ -6,7 +6,6 @@ export {
 
 export {
     R6IDSearch,
-    R6IDSearchReactor
 } from './Edit/R6IDSearch'
 
 export {
