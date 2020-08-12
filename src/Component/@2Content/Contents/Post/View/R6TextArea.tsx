@@ -21,9 +21,10 @@ border-radius: 4px;
 interface Props {
     placeholder? : string
     textRef?: (ref : React.RefObject<HTMLTextAreaElement> ) => void | (React.RefObject<HTMLTextAreaElement>);
+    onKeyDown?: ((event: React.KeyboardEvent<HTMLTextAreaElement>) => void) | undefined;
 }
 
-export default function R6TextArea({placeholder, textRef} : Props) {
+export default function R6TextArea({placeholder, textRef, onKeyDown} : Props) {
     const thisTextRef = useRef<HTMLTextAreaElement>(null);
     useEffect( () => {
         if (textRef) {
@@ -33,9 +34,7 @@ export default function R6TextArea({placeholder, textRef} : Props) {
                 (textRef as React.RefObject<HTMLTextAreaElement>) = thisTextRef;
             }
         }
-
-
     }, [])
-    return <TEXTAREA ref={thisTextRef} placeholder={placeholder}></TEXTAREA>
+    return <TEXTAREA ref={thisTextRef} placeholder={placeholder} onKeyDown={onKeyDown}></TEXTAREA>
 
 }

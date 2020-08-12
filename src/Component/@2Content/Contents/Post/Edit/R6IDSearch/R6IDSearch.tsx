@@ -1,6 +1,6 @@
 import React from "react";
 import './R6IDSearch.css'
-import {  Subject, from, Subscription, } from "rxjs";
+import {  from, Subscription, } from "rxjs";
 import {R6RankIcon} from "../../../../../@Reusable-Component";
 import styled from "styled-components";
 import { ReactComponent as EmptyBox } from './empty-box.svg'

@@ -168,6 +168,16 @@ export class R6Login extends React.Component<Props>  {
         this.props.login?.login(this.idInput.current!.value, this.pwdInput.current!.value);
     }
 
+    handleRegister(){
+        this.props.login?.gotoRegister();
+    }
+
+    handleOnKeyDown(event: React.KeyboardEvent<HTMLInputElement>){
+        if (event.keyCode === 13) {
+            this.props.login?.login(this.idInput.current!.value, this.pwdInput.current!.value)
+        }
+    }
+
     render() {
         
         const { isLoginModalOpened  } = this.props.forum!;
@@ -212,11 +222,11 @@ export class R6Login extends React.Component<Props>  {
 
                             <Form.Field >
                                 <label style={{color:'white'}}>아이디</label>
-                                <input placeholder='ID' ref={this.idInput}/>
+                                <input placeholder='ID' ref={this.idInput} onKeyDown={this.handleOnKeyDown.bind(this)}/>
                             </Form.Field>
                             <Form.Field>
                                 <label style={{color:'white'}}>비밀번호</label>
-                                <input placeholder='password' type={"password"} ref={this.pwdInput}/>
+                                <input placeholder='password' type={"password"} ref={this.pwdInput} onKeyDown={this.handleOnKeyDown.bind(this)}/>
                             </Form.Field>
                         </Form>
 
@@ -231,13 +241,12 @@ export class R6Login extends React.Component<Props>  {
                         <p className="description text-align-left">
                             로그인은 개인 정보 보호 정책 및  서비스 약관에 동의하는 것을 의미합니다.
                         </p>
-                        <Button inverted className="register-button" onClick={()=>{
-                            // this.props.history.push('/register')
-                        }}> 회원가입하기 </Button>
+                        <Button inverted className="register-button" onClick={this.handleRegister.bind(this)}> 회원가입하기 </Button>
                     </div>
 
                     <div className="right">
-                        <img src={require('./season18-he.jpg')}/>
+                        <img src={require('./loginpage.png')}/>
+                        {/* <img src="images/season18-he.jpg"></img> */}
                     </div>
                 
             </motion.div>
@@ -251,3 +260,5 @@ export class R6Login extends React.Component<Props>  {
 }
 
 export default R6Login
+//require('./season18-he.jpg')
+

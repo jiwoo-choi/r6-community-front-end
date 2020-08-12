@@ -36,12 +36,17 @@ export default class RegisterStore extends RootStoreP<RootStore> {
     }
 
     @action
+    goBack(){
+        this.root.router.goBack();
+    }
+
+    @action
     registerRequest(id: string, pwd: string, pwd2: string, email: string) {
 
         this.isError = false;
         this.idError = false;
         this.pwdError = false;
-        this.pwdError = false;
+        this.pwd2Error = false;
         this.emailError = false;
         this.isLoading = false;
 

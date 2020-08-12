@@ -131,7 +131,7 @@ export default class R6Cell extends React.Component<{data : ListElementType, isN
                         </TITLEAREA>
                         <SUBTITLEAREA>
                             <AUTHOR>{this.props.data.author}</AUTHOR>
-                            <TIME><Moment fromNow>{this.props.data.createdTime}</Moment></TIME>
+                            <TIME><Moment locale="ko" fromNow>{this.props.data.createdTime}</Moment></TIME>
                         </SUBTITLEAREA>
                     </GRIDTITLE>
                 </GRIDOUTER>

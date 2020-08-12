@@ -14,6 +14,7 @@ export default class ForumStore extends RootStoreP<RootStore>{
 
 
     queue? : Function;
+    queueArgs : any[] = [];
 
     @observable meta : Meta = { currentPage : 0, totalPage : 0 }; 
     /** 현재 페이지 */
@@ -113,7 +114,7 @@ export default class ForumStore extends RootStoreP<RootStore>{
             this.openLoginModal(true);
         }
     }
-    
+
     /** 포스트 페이지로 이동 */
     @action
     goPost(postId: number){

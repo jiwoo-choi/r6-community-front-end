@@ -93,7 +93,7 @@ class R6ListFooter extends React.PureComponent<Props>{
     }
 
     render() {
-        const { page, isLogined, meta } = this.props.forum!;
+        const { page, meta } = this.props.forum!;
 
         return(
             <>
@@ -109,7 +109,7 @@ class R6ListFooter extends React.PureComponent<Props>{
                     />
 
                     {/* <Input style={{marginRight:'10px'}} icon='search' placeholder='Search...' /> */}
-                    <Button className="write-button" icon color={"green"} size={"big"} onClick={this.handleOnClick.bind(this)}>
+                    <Button className="write-button" icon color={"green"} size={"medium"} onClick={this.handleOnClick.bind(this)}>
                     <Icon name={"edit"}></Icon>
                          &nbsp; 글쓰기 </Button>
                 </BUTTONAREA>

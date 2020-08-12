@@ -27,6 +27,17 @@ class R6Register extends React.PureComponent<Props> {
     emailInput = React.createRef<HTMLInputElement>();
  
 
+    handleOnKeyDown(event: React.KeyboardEvent<HTMLInputElement>){
+        if (event.keyCode === 13) {
+            this.props.register?.registerRequest(
+                this.idInput.current!.value,
+                this.pwdInput.current!.value,
+                this.pwd2Input.current!.value,
+                this.emailInput.current!.value,
+            )
+        }
+    }
+
     clickHandler(){
         this.props.register?.registerRequest(
             this.idInput.current!.value,
@@ -34,6 +45,10 @@ class R6Register extends React.PureComponent<Props> {
             this.pwd2Input.current!.value,
             this.emailInput.current!.value,
         )
+    }
+
+    goBackHandler(){
+        this.props.register?.goBack();
     }
 
     render(){
@@ -65,7 +80,7 @@ class R6Register extends React.PureComponent<Props> {
                 animate={{ scale: 1, opacity:1, y:'0%'}}
                 >
 
-                { !isConfirmation ? <R6RegisterConfirmation/> 
+                { isConfirmation ? <R6RegisterConfirmation/> 
                 :
                 (<React.Fragment>
                     <Form error={isError}>
@@ -85,28 +100,26 @@ class R6Register extends React.PureComponent<Props> {
                         />
                         <Form.Field required error={idError}>
                         <label>아이디</label>
-                        <input placeholder='ID' ref={this.idInput}/>
+                        <input placeholder='ID' ref={this.idInput} onKeyDown={this.handleOnKeyDown.bind(this)}/>
                         </Form.Field>
                         <Form.Field required error={pwdError}>
                         <label>비밀번호</label>
-                        <input placeholder='Password' type={"password"} ref={this.pwdInput}/>
+                        <input placeholder='Password' type={"password"} ref={this.pwdInput} onKeyDown={this.handleOnKeyDown.bind(this)}/>
                         </Form.Field>
                         <Form.Field required error={pwd2Error}>
                         <label>비밀번호 확인</label>
-                        <input placeholder='Password' type={"password"} ref={this.pwd2Input}/>
+                        <input placeholder='Password' type={"password"} ref={this.pwd2Input} onKeyDown={this.handleOnKeyDown.bind(this)}/>
                         </Form.Field>
                         <Form.Field required error={emailError}>
                         <label>인증용 아이디</label>
-                        <input placeholder='Email' type={"email"} ref={this.emailInput}/>
+                        <input placeholder='Email' type={"email"} ref={this.emailInput} onKeyDown={this.handleOnKeyDown.bind(this)}/>
                         </Form.Field>
                     </Form>
 
                     <Button id="button-top-margin" type='submit' fluid color={isError? "red" : "green"} loading={isLoading} disabled={isLoading}
                     onClick={this.clickHandler.bind(this)}>계속하기</Button>
 
-                    <div className="button-bottom-top"><a onClick={()=>{
-                        // this.props.history.goBack();
-                    }}> 이미 계정이 있으신가요? </a> </div>
+                    <div className="button-bottom-top"><a onClick={this.goBackHandler.bind(this)}> 이미 계정이 있으신가요? </a> </div>
                     <div> 등록하는 순간 R6-Community 서비스의 <a>이용 약관</a>과 <a>개인정보 보호 정책</a>에 동의하게 됩니다. </div>
                     </React.Fragment>
                 )}

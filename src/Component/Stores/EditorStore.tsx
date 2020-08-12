@@ -10,10 +10,12 @@ export default class EditorStore extends RootStoreP<RootStore> {
     /** 업로드 로딩 */
     @observable isLoading : boolean = false;
 
-
     @action
     upload(title: string, content: string, images : string[]){
 
+        if (title === "" || content === "") {
+            return; 
+        }
         let topicQueue : Topic = "free";
 
         let regexp = new RegExp(`\/[a-z]{1,}|\/`);
@@ -41,7 +43,6 @@ export default class EditorStore extends RootStoreP<RootStore> {
         return R6Ajax.shared.post(`post`, formData, "multipart", true)
         .subscribe(
             res=>{
-                console.log(res)
                 this.isLoading = false;
                 this.root.router.history.push(`/${topicQueue}/post/${res.response.postId}`)
             },

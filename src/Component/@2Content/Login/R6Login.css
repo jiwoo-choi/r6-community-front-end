@@ -47,9 +47,10 @@
 
 .login-content-container .right img {
     height:600px;
+    /* width:auto; */
     position:relative;
-    height:100%;
-    left:-54%;
+    /* height:100%; */
+    left:-70%;
 }
 
 

@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 import { Viewer } from '@toast-ui/react-editor'
-import { Placeholder, Segment, Header, Divider, Button, Confirm } from "semantic-ui-react";
+import { Placeholder, Segment, Header, Divider, Button, Confirm, Icon } from "semantic-ui-react";
 import '@toast-ui/editor/dist/toastui-editor-viewer.css';
 import './R6Post.css';
 import Moment from "react-moment";
@@ -11,6 +11,10 @@ import R6TextArea from "./R6TextArea";
 import { observer, inject } from "mobx-react";
 import PostStore from "../../../../Stores/PostStore";
 import ForumStore from "../../../../Stores/ForumStore";
+import R6CommentGroup from "./R6CommentGroup";
+import _ from 'lodash'
+import { R6Loading } from "../../../../@Reusable-Component";
+import { toJS } from "mobx";
 
 const POSTAREA = styled.div`
     position: relative;
@@ -48,12 +52,32 @@ const TIME = styled.div`
 const BUTTONAREA = styled.div`
     display:flex;
     justify-content: flex-end;
+    margin-bottom:10px;
 `
-
 
 const MODIFYBUTTONAREA = styled.div`
     margin:14px 0px;
 `
+
+const THUMBSUPBUTTONAREA = styled.div`
+    display:flex;
+    flex-direction:row;
+    width:100%;
+    justify-content:center;
+
+    button:nth-child(1) {
+        margin-right:10px !important;
+        width:90px;
+    }
+    button:nth-child(2) {
+        margin-left:10px !important;
+        margin-right:0px !important;
+        width:90px;
+    }
+
+`
+
+
 interface Props {
     post?: PostStore;
     forum?: ForumStore;
@@ -66,57 +90,56 @@ class R6Post extends React.PureComponent<Props> {
     commentInput = React.createRef<HTMLTextAreaElement>();
 
     componentDidMount() {
+        // window.scrollTo(0,0);
         this.props.post?.getPost();
     }
 
-    commentList(comment : CommentType[]){
-        
-        return comment.map( (value, index) => {
-            return (
-                <R6Comment key={index+"_COMMENT"} comment={value} onSubmit={this.onSubmit.bind(this)}></R6Comment>
-              )
-        })
+    getCommentList(comment: CommentType[]){
+
+        return(
+            <R6CommentGroup>
+                {          
+                    comment.map( (value, index) => {
+                        return (
+                            <R6Comment key={index+"_COMMENT"} comment={value} onSubmit={this.onSubmit.bind(this)}></R6Comment>
+                        )
+                    })
+                }
+            </R6CommentGroup>
+        )
     }
 
-    onSubmit(content:string, parentId: number){
-        this.props.post!.postComment( content, parentId )
+    onSubmit(content:string, parentId?: number){
+        this.props.post!.postComment( content, parentId)
     }
 
     handleOnClick(){
-        if (!this.props.forum!.isLogined) {
-            this.props.forum!.openLoginModal(true);
-        } else {
-            this.props.post!.postComment((this.commentInput as any).current.value)
+        this.onSubmit((this.commentInput as any).current.value)
+        if (this.commentInput.current) {
+            this.commentInput.current!.value = ""
         }
     } 
 
+    handleOnKeyDown(event: React.KeyboardEvent<HTMLInputElement>){
+        if (event.keyCode === 13) {
+            this.onSubmit((this.commentInput as any).current.value)
+        }
+    }
+    
     handleCancel(){
         this.props.post!.setConfirmOpen(false);
     }
+
     handleOpen(){
         this.props.post!.setConfirmOpen(true);
     }
-    handleConfirm(){
+
+    handleDelete(){
         this.props.post?.delete();        
     }
-    /**
-     * 
-                <Comment key={"COMMENT_" + index}>
-                <Comment.Avatar src='https://react.semantic-ui.com/images/avatar/small/matt.jpg' />
-                <Comment.Content>
-                  <Comment.Author as='a'>{value.username}</Comment.Author>
-                  <Comment.Metadata>
-                  <Moment fromNow>{value.createdTime}</Moment>
-                  </Comment.Metadata>
-                  <Comment.Text>{value.content}</Comment.Text>
-                  <Comment.Actions>
-                    <Comment.Action>Reply</Comment.Action>
-                  </Comment.Actions>
-                </Comment.Content>
-              </Comment>
-     */
+
     render(){
-        const { postContent, isLoading, isCommentLoading, isConfirmOpened, countOfComments} = this.props.post!;
+        const { postContent, isLoading, isCommentLoading, isConfirmOpened, countOfComments, flattenCommentList} = this.props.post!;
         const { nickName } = this.props.forum!;
 
         if ( isLoading || !postContent ) {
@@ -138,7 +161,7 @@ class R6Post extends React.PureComponent<Props> {
             
             )
         } else {
-            const { author, title, content, commentList, createdTime, postId} = postContent!
+            const { author, title, content, createdTime, postId} = postContent!
             return (
                 <>
                 
@@ -146,33 +169,46 @@ class R6Post extends React.PureComponent<Props> {
                     open={isConfirmOpened}
                     content='삭제하시겠습니까?'
                     onCancel={this.handleCancel.bind(this)}
-                    onConfirm={this.handleConfirm.bind(this)}
+                    onConfirm={this.handleDelete.bind(this)}
                 />
 
                     <POSTAREA key={postId + "_KEY"}>
                         <Header size={'huge'}>{title}</Header>
                         <SUBTITLEAREA>
                             <AUTHOR>{author}</AUTHOR>
-                            <TIME><Moment fromNow>{createdTime}</Moment></TIME>
+                            <TIME><Moment local locale="ko" fromNow>{createdTime}</Moment></TIME>
                         </SUBTITLEAREA>
                         {
                             nickName === author && 
                             <MODIFYBUTTONAREA>
-                                <Button inverted color={"red"} onClick={this.handleOpen.bind(this)}> 삭제 </Button>
-                                <Button inverted color={"green"}> 수정 </Button>
+                                <Button basic color={"red"} onClick={this.handleOpen.bind(this)}> 삭제 </Button>
+                                <Button basic color={"green"}> 수정 </Button>
                             </MODIFYBUTTONAREA>
                         }
-
                         <Divider />
-
                         <VIEWERAREA>
                             <Viewer initialValue={content}/>
                         </VIEWERAREA>
+                        
+                        <React.Fragment>
+                            <THUMBSUPBUTTONAREA>
+                                <Button icon basic color={"green"}>
+                                    <Icon name={"thumbs up outline"} ></Icon>
+                                    추천
+                                </Button>
+
+                                <Button icon basic color={"red"}>
+                                    <Icon name={"thumbs down outline"}></Icon>
+                                    비추천
+                                </Button>
+                            </THUMBSUPBUTTONAREA>
+                        </React.Fragment>
+
 
                         <Header key={"MY_KEY"} as='h2' dividing>
                             덧글 { countOfComments } 개
                         </Header>
-                        
+
                         <R6TextArea placeholder='덧글을 입력해주세요' textRef={ (ref) => this.commentInput = ref }/>
                         <BUTTONAREA>
                             <Button 
@@ -183,7 +219,7 @@ class R6Post extends React.PureComponent<Props> {
                                 disabled={isCommentLoading}
                                 loading={isCommentLoading}
                                 onClick={this.handleOnClick.bind(this)}/>
-                            </BUTTONAREA>
+                        </BUTTONAREA>
 
                         {/* <Form>
                             <R6TextArea placeholder='Tell us more' ref={ (ref) => this.commentInput = ref }/>
@@ -207,10 +243,15 @@ class R6Post extends React.PureComponent<Props> {
                                     }}/>
                             </BUTTONAREA>
                         </Form> */}
-                        
+                        {/*pencil delete */}
+
                         <React.Fragment>
                             {/* <R6Comment comment={commentsReactorList}></R6Comment> */}
-                            { this.commentList(commentList) }
+                            { 
+                                isCommentLoading ?
+                                <R6Loading/> :
+                                this.getCommentList(flattenCommentList)
+                            }
                             {/* <Comment.Group>
                                 { commentsReactorList.length !== 0 ? this.commentList(commentsReactorList) : this.commentList(commentList) }
                             </Comment.Group> */}

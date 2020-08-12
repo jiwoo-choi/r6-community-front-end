@@ -1,9 +1,9 @@
-import { observable, computed, action, toJS} from "mobx";
+import { observable, action } from "mobx";
 import { SearchResultProps } from "semantic-ui-react";
 import { RANKBYREGION, RANKAPI } from "../../../../../../Util/Entity";
 import R6Ajax from "../../../../../../Library/R6Ajax";
-import { forkJoin, Subject, Observable, of, ConnectableObservable, Subscription } from "rxjs";
-import { catchError, switchMap, publishReplay, publish, refCount, share, distinctUntilChanged, debounceTime, tap, filter } from "rxjs/operators";
+import { forkJoin, Subject, of, Subscription } from "rxjs";
+import { catchError, switchMap, distinctUntilChanged, debounceTime, tap, filter } from "rxjs/operators";
 
 export interface SearchResultFormat extends SearchResultProps {
     /// 키
@@ -20,7 +20,6 @@ export interface SearchResultFormat extends SearchResultProps {
 
 export default class IDSearchStore {
 
-    @observable results : (RANKBYREGION[])[]= []
     @observable searchText = ""
     @observable isLoading :boolean = false;    
     @observable resultQuery : string = "";
@@ -41,8 +40,6 @@ export default class IDSearchStore {
             this.searchText = "";
         }
     }
-
-    
 
     @action setActive(on:boolean){
         this.isActive = on;

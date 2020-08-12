@@ -13,7 +13,6 @@ export const RootReactor = React.createContext<ReactorType>({});
 export default class Provider extends React.PureComponent<{[key:string]: Reactor<any,any,any>}> {
 
     componentWillMount(){
-        console.log(this.props)
     }
 
     render(){

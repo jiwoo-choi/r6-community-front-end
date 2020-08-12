@@ -37,12 +37,15 @@ export interface PostContentType {
 }
 
 /** 커멘트 타입입니다 */
- export interface CommentType {
-     commentId:number;
-     username:string;
-     content:string;
-     childComment:CommentType[];
-     createdTime:string;
+export interface CommentType {
+    commentId:number;
+    username:string;
+    content:string;
+    childComment:CommentType[];
+    createdTime:string;
+    parentId?: number;
+    parentNickname?: string;
+    isChild?:boolean;
 }
 
 /** 포스트 `리스트` 타입입니다. */

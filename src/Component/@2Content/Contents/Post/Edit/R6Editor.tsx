@@ -1,23 +1,13 @@
 import { Editor } from '@toast-ui/react-editor'
 import React  from 'react'
-import { Button, Loader, Dimmer, Segment, Portal } from 'semantic-ui-react'
+import { Button } from 'semantic-ui-react'
 import { Input } from 'semantic-ui-react'
 import 'codemirror/lib/codemirror.css';
 import '@toast-ui/editor/dist/toastui-editor.css';
-import R6EditorReactor, { EditorinitialState, EditorState } from './R6EditorReactor';
 
 import styled from 'styled-components'
-
-// import R6IDSearch from './IDSearch/R6IDSearch'
 import { RANKAPI } from '../../../../../Util/Entity';
-import ForumReactor, { ForumReactorProps, ForumReactorProp } from "../../../../@0ForumReactor/ForumReactor";
 import R6IDSearch from './R6IDSearch/R6IDSearch';
-import { RouteComponentProps, withRouter } from 'react-router-dom';
-import { interval } from 'rxjs';
-import R6Ajax from '../../../../../Library/R6Ajax';
-import { map, distinctUntilChanged, filter, skip } from 'rxjs/operators';
-import { deepDistinctUntilChanged } from 'reactivex-redux';
-import { AjaxError, ajax } from 'rxjs/ajax';
 import { inject, observer } from 'mobx-react';
 import EditorStore from '../../../../Stores/EditorStore';
 import IDSearchStore from './R6IDSearch/IDSearchStore';
@@ -25,11 +15,6 @@ import ForumStore from '../../../../Stores/ForumStore';
 
 const FLUIDDIV = styled.div`
     width:100%;
-    margin-bottom:10px;
-`
-
-const FLUIDDIV1 = styled.div`
-    width:50%;
     margin-bottom:10px;
 `
 const BUTTONGROUP = styled.div`
@@ -67,6 +52,7 @@ class R6Editor extends React.Component<Props>{
     store? : IDSearchStore;
 
     componentDidMount(){
+        window.scrollTo(0,0);
         this.getInstanceofEditor()?.addHook('addImageBlobHook', this.onAddImageBlob.bind(this))   
     }
 
@@ -80,7 +66,6 @@ class R6Editor extends React.Component<Props>{
             .then(response => {
                 callback(response.imageUrl[0], 'alt text');
             }).catch(error => {
-                console.log(error);
             });
     }
     
@@ -190,8 +175,11 @@ class R6Editor extends React.Component<Props>{
             const { isLoading } = this.props.editor!
 
             return(
-
-                <CONTAINER>    
+                <>
+                {/* <Segment>
+                    <Icon name={"arrow left"}></Icon>
+                </Segment> */}
+                <CONTAINER>
                 <FLUIDDIV>
                     <Input
                         size={'large'}
@@ -224,6 +212,7 @@ class R6Editor extends React.Component<Props>{
                     </BUTTONGROUP>
                 </FLUIDDIV>
             </CONTAINER>
+            </>
             )
         }
        

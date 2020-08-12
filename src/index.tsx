@@ -2,9 +2,9 @@ import React, { Suspense, lazy} from 'react';
 import ReactDOM from 'react-dom';
 import 'semantic-ui-css/semantic.min.css'
 import './index.css';
+import 'moment/locale/ko'
 import Main from './Main';
 import * as serviceWorker from './serviceWorker';
-
 // import {
 //   BrowserRouter as Router,
 //   Switch,
@@ -21,8 +21,6 @@ import { R6Register, R6RegisterConfirmation } from './Component/@2Content/Login'
 import { R6Footer } from './Component/@3Footer';
 import R6Comment from './Component/@2Content/Contents/Post/View/R6Comment';
 import RootStore from './Component/Stores/RootStore';
-import { R6List, R6IDSearch } from './Component/@2Content/Contents';
-import IDSearchStore from './Component/@2Content/Contents/Post/Edit/R6IDSearch/IDSearchStore';
 import styled from 'styled-components';
 
 
@@ -36,6 +34,8 @@ const WRPAPER = styled.div`
   position: relative; /*푸터를 위해*/
   width: 100%; 
 `
+
+
 ReactDOM.render(
   <>
     <Provider {...rootStore}>

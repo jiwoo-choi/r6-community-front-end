@@ -23,7 +23,7 @@ export default class LoginStore extends RootStoreP<RootStore>{
             R6Ajax.shared.signIn(id, pwd)
             .subscribe(
                 res=> {
-                    const queue = this.root.forum.queue
+                    const queue = this.root.forum.queue;
                     this.root.forum.isLoginModalOpened = false;
                     this.root.forum.isLogined = true;    
                     this.root.forum.nickName = id;
@@ -48,5 +48,10 @@ export default class LoginStore extends RootStoreP<RootStore>{
         this.isLoginError = false;
         this.errorMessage = "";
         this.isLoginLoading = false;
+    }
+
+    @action
+    gotoRegister(){
+        this.root.router.push('/register');
     }
 }
