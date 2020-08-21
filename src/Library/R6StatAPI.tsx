@@ -6,7 +6,7 @@ import { forkJoin, Observable, from, Subscriber } from 'rxjs';
 import {  map, tap, delay } from 'rxjs/operators';
 import { catchErrorJustReturn, flatAxiosResultAndCast } from './RxJsExtension';
 import moxios from 'moxios';
-import { listResultMockup, rankbyregionMockup } from '../Data/mockup';
+// import { listResultMockup, rankbyregionMockup } from '../Data/mockup';
 import { Reactor } from 'jsreactorkit'
 
 

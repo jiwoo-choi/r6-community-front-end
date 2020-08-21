@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 import { Viewer } from '@toast-ui/react-editor'
-import { Placeholder, Segment, Header, Divider, Button, Confirm, Icon } from "semantic-ui-react";
+import { Placeholder, Segment, Header, Divider, Button, Confirm, Icon, Popup } from "semantic-ui-react";
 import '@toast-ui/editor/dist/toastui-editor-viewer.css';
 import './R6Post.css';
 import Moment from "react-moment";
@@ -74,7 +74,6 @@ const THUMBSUPBUTTONAREA = styled.div`
         margin-right:0px !important;
         width:90px;
     }
-
 `
 
 
@@ -94,14 +93,23 @@ class R6Post extends React.PureComponent<Props> {
         this.props.post?.getPost();
     }
 
+    
     getCommentList(comment: CommentType[]){
-
+        const currentNickName = this.props.forum!.nickName;
         return(
             <R6CommentGroup>
                 {          
                     comment.map( (value, index) => {
                         return (
-                            <R6Comment key={index+"_COMMENT"} comment={value} onSubmit={this.onSubmit.bind(this)}></R6Comment>
+                            <R6Comment 
+                                key={index+"_COMMENT"} 
+                                comment={value} 
+                                onSubmit={this.onSubmit.bind(this)}
+                                onCommentDelete={this.onCommentDelete.bind(this)}
+                                onCommentEdit={this.onCommentEdit.bind(this)}
+                                isEditable={currentNickName === value.username}
+                                >
+                            </R6Comment>
                         )
                     })
                 }
@@ -109,8 +117,16 @@ class R6Post extends React.PureComponent<Props> {
         )
     }
 
-    onSubmit(content:string, parentId?: number){
-        this.props.post!.postComment( content, parentId)
+    onCommentDelete(commentId: number){
+        this.props.post?.commentDelete(commentId);
+    }
+
+    onCommentEdit(commentId: number, content: string){
+        this.props.post?.commentEdit(commentId, content);
+    }
+
+    onSubmit(content:string, replayUserName?: string, parentId?: number,){
+        this.props.post!.postComment(content, replayUserName, parentId)
     }
 
     handleOnClick(){
@@ -120,23 +136,27 @@ class R6Post extends React.PureComponent<Props> {
         }
     } 
 
-    handleOnKeyDown(event: React.KeyboardEvent<HTMLInputElement>){
-        if (event.keyCode === 13) {
-            this.onSubmit((this.commentInput as any).current.value)
-        }
+    handleThumbsUp(){
+        this.props.post!.thumbsUp();
     }
-    
+
     handleCancel(){
         this.props.post!.setConfirmOpen(false);
     }
 
-    handleOpen(){
+    handleDeleteModal(){
         this.props.post!.setConfirmOpen(true);
+    }
+
+    handleEdit(){
+        this.props.post!.goEdit();
     }
 
     handleDelete(){
         this.props.post?.delete();        
     }
+
+
 
     render(){
         const { postContent, isLoading, isCommentLoading, isConfirmOpened, countOfComments, flattenCommentList} = this.props.post!;
@@ -161,7 +181,8 @@ class R6Post extends React.PureComponent<Props> {
             
             )
         } else {
-            const { author, title, content, createdTime, postId} = postContent!
+            const { author, title, content, createdTime, postId, recommend } = postContent!
+            const LikedButtonColor = recommend ? "green" : "grey"
             return (
                 <>
                 
@@ -181,8 +202,8 @@ class R6Post extends React.PureComponent<Props> {
                         {
                             nickName === author && 
                             <MODIFYBUTTONAREA>
-                                <Button basic color={"red"} onClick={this.handleOpen.bind(this)}> 삭제 </Button>
-                                <Button basic color={"green"}> 수정 </Button>
+                                <Button basic color={"red"} onClick={this.handleDeleteModal.bind(this)}> 삭제 </Button>
+                                <Button basic color={"green"} onClick={this.handleEdit.bind(this)}> 수정 </Button>
                             </MODIFYBUTTONAREA>
                         }
                         <Divider />
@@ -191,24 +212,25 @@ class R6Post extends React.PureComponent<Props> {
                         </VIEWERAREA>
                         
                         <React.Fragment>
-                            <THUMBSUPBUTTONAREA>
-                                <Button icon basic color={"green"}>
-                                    <Icon name={"thumbs up outline"} ></Icon>
-                                    추천
-                                </Button>
-
-                                <Button icon basic color={"red"}>
-                                    <Icon name={"thumbs down outline"}></Icon>
-                                    비추천
-                                </Button>
-                            </THUMBSUPBUTTONAREA>
+                        <THUMBSUPBUTTONAREA>
+                        <Popup
+                            trigger={ 
+                                <Button icon basic={!recommend} color={LikedButtonColor} onClick={this.handleThumbsUp.bind(this)}>
+                                     <Icon name={"thumbs up outline"} ></Icon>
+                                     좋아요
+                                 </Button>
+                             }
+                            content={ !recommend? "게시글 추천하기" : "게시글 추천 취소하기"}
+                        />
+                        </THUMBSUPBUTTONAREA>
                         </React.Fragment>
 
 
                         <Header key={"MY_KEY"} as='h2' dividing>
                             덧글 { countOfComments } 개
                         </Header>
-
+                    
+                        
                         <R6TextArea placeholder='덧글을 입력해주세요' textRef={ (ref) => this.commentInput = ref }/>
                         <BUTTONAREA>
                             <Button 

@@ -41,11 +41,10 @@ export interface CommentType {
     commentId:number;
     username:string;
     content:string;
-    childComment:CommentType[];
     createdTime:string;
+    childComment?:CommentType[];
     parentId?: number;
-    parentNickname?: string;
-    isChild?:boolean;
+    replayUsername? : string;
 }
 
 /** 포스트 `리스트` 타입입니다. */
@@ -89,7 +88,7 @@ export interface RANKAPI {
     kills:number;
     updateTime?: string|Date;
     abandons: number|string;
-    mmr:number;
+    mmr:number; 
     wins:number;
     region:RegionType;
     season:number;

@@ -78,9 +78,9 @@ export default class R6Ajax {
         return ajax.put(href, body, this.getHeader(headers,withAccessToken))
     }
 
-    getJson<T>(url: string, headers?: Object | "json" | "multipart") : Observable<T> {
+    getJson<T>(url: string, headers?: Object | "json" | "multipart", withAccessToken: boolean = false) : Observable<T> {
         const {href} = new URL(url, this.baseURLWithAPIVersion);
-        return ajax.getJSON(href, this.getHeader(headers, false))
+        return ajax.getJSON(href, this.getHeader(headers, withAccessToken))
     }
 
     imagePost(blob:Blob) {

@@ -23,15 +23,15 @@ export default class LoginStore extends RootStoreP<RootStore>{
             R6Ajax.shared.signIn(id, pwd)
             .subscribe(
                 res=> {
-                    const queue = this.root.forum.queue;
+                    // const queue = this.root.forum.queue;
                     this.root.forum.isLoginModalOpened = false;
                     this.root.forum.isLogined = true;    
                     this.root.forum.nickName = id;
 
-                    if (queue) {
-                        queue();
-                        this.root.forum.queue = undefined;    
-                    } 
+                    // if (queue) {
+                    //     queue();
+                    //     this.root.forum.queue = undefined;    
+                    // } 
                 },
                 err => {
                     this.isLoginLoading = false;

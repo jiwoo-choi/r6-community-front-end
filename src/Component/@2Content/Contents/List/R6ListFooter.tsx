@@ -60,7 +60,6 @@ class R6ListFooter extends React.PureComponent<Props>{
             this.props.forum!.getList(undefined, activePage);
         }
 
-
     }
 
     handleOnClick() {

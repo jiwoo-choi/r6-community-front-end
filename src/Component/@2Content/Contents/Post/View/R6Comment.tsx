@@ -18,9 +18,17 @@ const ANIMATE = keyframes`
     }
 `
 
-const COMMENTGRID = styled.div<{isNew?: boolean}>`
+const COMMENTGRID = styled.div<{isNew?: boolean, show? : boolean}>`
+    ${props => {
+        if (!props.show) {
+            return 'display:flex;'
+        } else {
+            return 'display:none;'
+        }
+    }}
+
     position:relative;
-    display: flex;
+    // display: flex;
     flex-direction: column;
     justify-content:flex-end;
     // border-top: 1px solid #eee;
@@ -95,7 +103,26 @@ const BUTTONGROUPAREA = styled.div`
     // margin-bottom: 1rem;
 `
 
-const CHILDBACKGROUND = styled.div`
+const REPLYAREA = styled.div`
+    background-color: rgba(0, 0, 0, 0.016);
+    margin-top: 1.3125rem;
+    border-width: 1px;
+    border-style: solid;
+    border-color: rgba(0, 0, 0, 0.02);
+    border-image: initial;
+    padding: 1rem;
+    border-radius: 4px;
+`
+
+
+const EDITREPLYAREA = styled.div<{show?: boolean}>`
+    ${props => {
+        if (props.show) {
+            return 'display:block;'
+        } else {
+            return 'display:none;'
+        }
+    }}
     background-color: rgba(0, 0, 0, 0.016);
     margin-top: 1.3125rem;
     border-width: 1px;
@@ -125,9 +152,18 @@ interface Props {
     comment:CommentType;
     selected?: boolean;
     value?:number;
+    /** Group으로 부터 관리 받는 종속성 목록. */
     onClick?:(value: number) => void;
     onCancel?:()=>void;
-    onSubmit: (content:string, parentId?: number) => void;
+    onCommentEditClick?:(value: number) => void;
+    onCommentEditCancel?:()=>void;
+
+    /** Post로 부터 관리받는 종속성 목록. */
+    onSubmit: (content:string, replayUsername?: string, parentId?: number) => void;
+    onCommentEdit?:(commentId: number, content: string)=>void;
+    onCommentDelete?:(commentId: number)=>void;
+    isEditable: boolean;
+    isEditing?:boolean;
 }
 
 export default class R6Comment extends React.PureComponent<Props> {
@@ -139,15 +175,13 @@ export default class R6Comment extends React.PureComponent<Props> {
     // reply click, make a new something?
     // is child? how?
 
-    thisTextRef = React.createRef<HTMLTextAreaElement>();
+    replyTextRef = React.createRef<HTMLTextAreaElement>();
+    editTextRef = React.createRef<HTMLTextAreaElement>();
 
 
     handleOnSubmit(){
-        if (this.props.comment.parentId) {
-            this.props.onSubmit(this.thisTextRef.current!.value, this.props.comment.parentId)
-        } else {
-            this.props.onSubmit(this.thisTextRef.current!.value, this.props.comment.commentId)
-        }
+        const parentId = this.props.comment.parentId ? this.props.comment.parentId : this.props.comment.commentId
+        this.props.onSubmit(this.replyTextRef.current!.value, this.props.comment.username, parentId)
     }
 
     handleOnClick(){
@@ -162,42 +196,102 @@ export default class R6Comment extends React.PureComponent<Props> {
         }                                
     }
 
+
+    handleCommentDeleteOnClick(){
+        //바로 삭제해 줘야함.
+        if (this.props.onCommentDelete){
+            console.log("hey");
+            this.props.onCommentDelete(this.props.comment.commentId)
+        }                                 
+    }
+
+    /**
+     * 단순 수정 버튼 (연필) 클릭시.
+     */
+    handleCommentEditOnClick(){
+        if (this.props.onCommentEditClick){
+            this.props.onCommentEditClick(this.props.value!)
+            this.editTextRef.current!.value = this.props.comment.content;       
+        }                        
+    }
+
+      /**
+     * 단순 수정 버튼 (연필) 클릭시.
+     */
+    handleCommentEditOnCancel(){
+        if (this.props.onCommentEditCancel){
+            this.editTextRef.current!.value = "";       
+            this.props.onCommentEditCancel()
+        }                        
+    }
+
+    /**
+     * 수정버튼을 실제로 excute할때.
+     */
+    handleCommentEditExcute(){
+        if(this.props.onCommentEdit){
+            this.props.onCommentEdit(this.props.comment.commentId, this.editTextRef.current!.value)
+        }
+    }
+
     render(){
+        
+        const isChild : boolean = (this.props.comment.childComment === undefined);
+        
         return (
-            <COMMENTGRID>
-                <UPDOWNAREA>
-                    <Button icon size={"mini"} color={"black"} basic>
-                        <Icon name={"thumbs up"}/>
-                    </Button>
-                    <Button icon size={"mini"} color={"black"} basic>
-                        <Icon name={"thumbs down"} />
-                    </Button>
-                </UPDOWNAREA>
+            <>
+
+                <EDITREPLYAREA show={this.props.isEditing}>
+                        <R6TextArea textRef={(ref)=> this.editTextRef = ref}/>
+                        <BUTTONGROUPAREA>
+                            <Button color={"yellow"} size={"small"} compact onClick={this.handleCommentEditExcute.bind(this)}>
+                                        수정하기
+                            </Button>
+                            <Button color={"grey"} size={"small"} compact onClick={this.handleCommentEditOnCancel.bind(this)}>
+                                        취소
+                            </Button>
+                        </BUTTONGROUPAREA>
+                </EDITREPLYAREA>
+
+                <COMMENTGRID show={this.props.isEditing}>
+                {
+                    (this.props.isEditable && !this.props.isEditing) &&
+                    <UPDOWNAREA>
+                        <Button icon size={"mini"} color={"black"} basic onClick={this.handleCommentEditOnClick.bind(this)}>
+                            <Icon name={"pencil"}/>
+                        </Button>
+                        <Button icon size={"mini"} color={"red"} basic onClick={this.handleCommentDeleteOnClick.bind(this)}>
+                            <Icon name={"delete"} />
+                        </Button>
+                    </UPDOWNAREA>
+                }
+
+
                 <PROFILECONTAINER>
-                    { this.props.comment.isChild && <Icon name={"level up alternate"} flipped={"vertically"} rotated={"clockwise"}></Icon>}
+                    { isChild && <Icon name={"level up alternate"} flipped={"vertically"} rotated={"clockwise"}></Icon>}
                     <R6RankIcon style={{marginLeft:"-5px"}} rank={"SILVER_I"} size={30}></R6RankIcon>
                     <div id="id">{this.props.comment.username}</div>
                     <div id="time"><Moment locale="ko" fromNow>{this.props.comment.createdTime}</Moment></div>
                 </PROFILECONTAINER>
 
-                <CONTENTCONTAINER isChild={this.props.comment.isChild}>
+                <CONTENTCONTAINER isChild={isChild}>
                     <CONTENTAREA>
-                        { this.props.comment.isChild && <TAG> @{this.props.comment.parentNickname} </TAG>}
+                        { isChild && <TAG> @{this.props.comment.replayUsername!} </TAG>}
                         {this.props.comment.content}
                     </CONTENTAREA>
                 </CONTENTCONTAINER>
 
-                <BUTTONAREA isChild={this.props.comment.isChild} onClick={this.handleOnClick.bind(this)}>
-                    <REPLYBUTTONAREA>
+                <BUTTONAREA isChild={isChild}>
+                    <REPLYBUTTONAREA onClick={this.handleOnClick.bind(this)}>
                             <Icon name={"reply"} size={"small"}></Icon>
                             답글달기
                     </REPLYBUTTONAREA>
                 </BUTTONAREA>
 
                 {
-                    this.props.selected && 
-                    <CHILDBACKGROUND>
-                        <R6TextArea placeholder={`${this.props.comment.username} 에게 덧글 달기..` } textRef={(ref)=> this.thisTextRef = ref}/>
+                this.props.selected && 
+                    <REPLYAREA>
+                        <R6TextArea placeholder={`${this.props.comment.username} 에게 덧글 달기..` } textRef={(ref)=> this.replyTextRef = ref}/>
                         <BUTTONGROUPAREA>
                             <Button color={"green"} size={"small"} compact onClick={this.handleOnSubmit.bind(this)}>
                                         작성하기
@@ -206,18 +300,10 @@ export default class R6Comment extends React.PureComponent<Props> {
                                         취소
                             </Button>
                         </BUTTONGROUPAREA>
-                    </CHILDBACKGROUND>
+                    </REPLYAREA>
                 }
-
-                {/* <CHILDCONTAINER> */}
-                    {/* {
-                        comment.childComment.map( (value, index) => {
-                            return <R6Comment isChild={true} comment={value} key={comment.commentId+index+"_CHILD_COMMENT"} onSubmit={onSubmit}></R6Comment>
-                        })
-                    } */}
-                {/* </CHILDCONTAINER> */}
-
-            </COMMENTGRID>
+                </COMMENTGRID>
+            </>
         )
     }
 }

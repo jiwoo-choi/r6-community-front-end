@@ -5,7 +5,7 @@ import { PostContentType, CommentType } from "../../Util/Entity";
 import R6Ajax from "../../Library/R6Ajax";
 import axios from "axios";
 import {flatMap} from 'rxjs/operators'
-import { Topic } from "../@0ForumReactor/ForumReactor";
+import { Topic } from "./ForumStore";
 
 export default class PostStore extends RootStoreP<RootStore> {
 
@@ -41,18 +41,19 @@ export default class PostStore extends RootStoreP<RootStore> {
         if (!this.postContent) {
             return []
         } else {
-            console.log(this.getFlattenCommentList(toJS(this.postContent.commentList)))
-            return this.getFlattenCommentList(toJS(this.postContent.commentList))
+            // return this.getFlattenCommentList(this.postContent.commentList)
+
+            let array: CommentType[] = []; 
+
+            for (const element of this.postContent.commentList) {
+                array = array.concat(element)
+                if (element.childComment) {
+                    array = array.concat(element.childComment)
+                }
+            }
+            return array;
         }
     }
-
-    // get commentList() : CommentType[] {
-    //     if (!this.postContent) {
-    //         return [];
-    //     } else {
-    //         return this.getFlattenCommentList(this.commentList)
-    //     }
-    // }
 
     @computed get countOfComments(){
         if (this.postContent) {
@@ -93,27 +94,29 @@ export default class PostStore extends RootStoreP<RootStore> {
     // }
 
     
-    getFlattenCommentList(comment : CommentType[], parentId?: number, parentNickname?: string): CommentType[]{
+    // @computed
+    // getFlattenCommentList(comment : CommentType[], parentId?: number, parentNickname?: string): CommentType[]{
 
-        if (comment.length === 0) {
-            return [];
-        }
 
-        let array: CommentType[] = []; 
+    //     // if (comment.length === 0) {
+    //     //     return [];
+    //     // }
 
-        for( const element of comment) {  
-            let elementArray : CommentType[];
-            if (parentId) {
-                elementArray = [{...element, parentId: parentId, parentNickname: parentNickname, isChild: true}]
-            } else {
-                elementArray = [element]
-            }
-            elementArray = elementArray.concat(this.getFlattenCommentList(element.childComment, element.commentId, element.username))
-            array = array.concat(elementArray);
-        }
+    //     // let array: CommentType[] = []; 
+
+    //     // for( const element of comment) {  
+    //     //     let elementArray : CommentType[];
+    //     //     if (parentId) {
+    //     //         elementArray = [{...element, parentId: parentId, parentNickname: parentNickname, isChild: true}]
+    //     //     } else {
+    //     //         elementArray = [element]
+    //     //     }
+    //     //     elementArray = elementArray.concat(this.getFlattenCommentList(element.childComment, element.commentId, element.username))
+    //     //     array = array.concat(elementArray);
+    //     // }
         
-        return array;
-    }
+    //     // return array;
+    // }
 
 
 
@@ -158,9 +161,9 @@ export default class PostStore extends RootStoreP<RootStore> {
         const postId = pathNames[3];
         this.postId = postId;
         this.isLoading = true;
+        this.postContent = undefined;
 
-
-        return R6Ajax.shared.getJson<PostContentType>(`post/${postId}`)
+        return R6Ajax.shared.getJson<PostContentType>(`post/${postId}`, "json", true)
         .subscribe(
             res => {
                 this.isLoading = false;
@@ -175,28 +178,35 @@ export default class PostStore extends RootStoreP<RootStore> {
     @action
     thumbsUp(){
 
-        this.thumbsLoading = true;
-        
-        return R6Ajax.shared.post('comment', {postId: this.postId}, "json", true)
+        if (!this.root.forum.isLogined) {
+            this.root.forum.openLoginModal(true);
+            return;
+        }
+
+        this.isLoading = true;
+
+        return R6Ajax.shared.post(`post/${this.postId}/recommend`, {} , "json", true)
         .pipe(
             flatMap( res => {
-                return R6Ajax.shared.getJson<PostContentType>(`post/${this.postId}/recommend`)
+                return R6Ajax.shared.getJson<PostContentType>(`post/${this.postId}`, "json", true)
             })
         )
         .subscribe(
             res => { 
+                this.postContent = res;
             } ,
             err => {
+                alert("error")
             },
             () => {
-                this.thumbsLoading = false;
+                this.isLoading = false;
             }
         )
     }
 
     @action
-    postComment(content: string, parentCommentId?: number){  
-
+    postComment(content: string, replayUsername?: string, parentId?: number){  
+        
         if (!this.root.forum.isLogined) {
             this.root.forum.openLoginModal(true);
             return;
@@ -208,8 +218,9 @@ export default class PostStore extends RootStoreP<RootStore> {
 
         this.isCommentLoading = true;
 
-        if (parentCommentId) {
-            return R6Ajax.shared.post('comment', {content: content, postId: this.postId, parentCommentId: parentCommentId}, "json", true)
+        if (parentId && replayUsername) {
+            
+            return R6Ajax.shared.post('comment', {content: content, postId: this.postId, parentCommentId: parentId, replayUsername:replayUsername }, "json", true)
             .pipe(
                 flatMap( res => {
                     return R6Ajax.shared.getJson<PostContentType>(`post/${this.postId}`)
@@ -218,10 +229,11 @@ export default class PostStore extends RootStoreP<RootStore> {
             .subscribe(
                 res => { 
                     this.postContent = res;
-                    this.isCommentLoading = false;
                 } ,
                 err => {
                     this.isCommentError = true;
+                },
+                () => {
                     this.isCommentLoading = false;
                 }
             )
@@ -235,15 +247,60 @@ export default class PostStore extends RootStoreP<RootStore> {
             .subscribe(
                 res => { 
                     this.postContent = res;
-                    this.isCommentLoading = false;
                 } ,
                 err => {
                     this.isCommentError = true;
+                },
+                () => {
                     this.isCommentLoading = false;
                 }
             )
         }
     }
+
+
+    @action
+    commentDelete(commentId: number){
+        this.isCommentLoading = true;
+        console.log(commentId)
+        return R6Ajax.shared.delete(`comment/${commentId}`, "json", true)
+        .pipe(
+            flatMap( res => {
+                return R6Ajax.shared.getJson<PostContentType>(`post/${this.postId}`)
+            })
+        )
+        .subscribe(
+            res => {
+                this.postContent = res;
+                this.isCommentLoading = false;
+            },
+            err => {
+                this.isCommentLoading = false;
+
+            } 
+        )
+    }
+
+    @action
+    commentEdit(commentId : number, content: string){
+        this.isCommentLoading = true;
+        return R6Ajax.shared.put(`comment/${commentId}`,{ content : content }, "json", true)
+        .pipe(
+            flatMap( res => {
+                return R6Ajax.shared.getJson<PostContentType>(`post/${this.postId}`)
+            })
+        )
+        .subscribe(
+            res => {
+                this.postContent = res;
+                this.isCommentLoading = false;
+            },
+            err => {
+                this.isCommentLoading = false;
+            } 
+        )
+    }
+
 
     @action
     setConfirmOpen(open:boolean) {
@@ -275,6 +332,15 @@ export default class PostStore extends RootStoreP<RootStore> {
 
             } 
         )
+    }
+
+    @action
+    goEdit(){
+
+        //1. check validation
+        //2. go to editor
+        const topic = this.root.forum.topic;
+        this.root.router.push(`/${topic}/editor/edit/${this.postId}`)
     }
 
 

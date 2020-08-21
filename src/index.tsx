@@ -1,10 +1,13 @@
 import React, { Suspense, lazy} from 'react';
 import ReactDOM from 'react-dom';
 import 'semantic-ui-css/semantic.min.css'
-import './index.css';
 import 'moment/locale/ko'
 import Main from './Main';
 import * as serviceWorker from './serviceWorker';
+import 'codemirror/lib/codemirror.css';
+import '@toast-ui/editor/dist/toastui-editor.css';
+import './index.css';
+
 // import {
 //   BrowserRouter as Router,
 //   Switch,
@@ -34,7 +37,6 @@ const WRPAPER = styled.div`
   position: relative; /*푸터를 위해*/
   width: 100%; 
 `
-
 
 ReactDOM.render(
   <>

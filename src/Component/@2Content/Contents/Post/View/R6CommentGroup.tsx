@@ -14,29 +14,45 @@ interface Props {
 
 interface State {
     currentValue: number;
+    currentEditingValue: number;
 }
 
 export default class R6CommentGroup extends React.PureComponent<Props, State> {
     
     constructor(props: any){
         super(props);
-        this.state = { currentValue : -1 }
+        this.state = { 
+            currentEditingValue : -1,
+            currentValue : -1 
+        }
     }
-    handleClick(current: number){
-        // if (this.props.onChange) {
-        //     this.props.onChange(inputVal);
-        // }
 
+    handleClick(current: number){
         if (this.state.currentValue === current) {
             this.setState({currentValue : -1})
         } else {
             this.setState({currentValue: current})
+            this.handleEditingCancel();
         }
     }
 
     handleCancel(){
         this.setState({currentValue: -1})
     }
+
+    handleEditing(current: number){
+        if (this.state.currentEditingValue === current) {
+            this.setState({currentEditingValue : -1})
+        } else {
+            this.setState({currentEditingValue: current})
+            this.handleCancel();
+        }
+    }
+
+    handleEditingCancel(){
+        this.setState({currentEditingValue: -1})
+    }
+
 
     render(){
         return(
@@ -47,7 +63,10 @@ export default class R6CommentGroup extends React.PureComponent<Props, State> {
                         ...child.props,
                         onClick : this.handleClick.bind(this),
                         onCancel: this.handleCancel.bind(this),
+                        onCommentEditClick: this.handleEditing.bind(this),
+                        onCommentEditCancel: this.handleEditingCancel.bind(this),
                         selected: (this.state.currentValue > -1) && this.state.currentValue === index,
+                        isEditing: (this.state.currentEditingValue > -1) && this.state.currentEditingValue === index,
                         value: index,
                     })
                 })

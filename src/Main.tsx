@@ -13,8 +13,6 @@ import { createPortal } from "react-dom";
 
 
 import Page404 from './Component/@2Content/Page404/Page404';
-import { ForumReactor } from './Component/@0ForumReactor';
-import { ForumStateInitialState, Topic } from './Component/@0ForumReactor/ForumReactor';
 import { values } from 'lodash';
 import { deepDistinctUntilChanged } from 'jsreactorkit';
 import { skip } from 'rxjs/operators';
@@ -61,46 +59,42 @@ const PADDER = styled.div`
 
 class Main extends React.PureComponent<RouteComponentProps> {
 
-  reactor: ForumReactor;
-  reactorControl: any;
-  newTopic: Topic;
 
   constructor(props:RouteComponentProps){
 
     super(props);
     
-    
-    let regexp = new RegExp(`\/[a-z]{1,}|\/`);
-    let pathname = this.props.location.pathname;
-    let progressed = regexp.exec(pathname);
-    let excuted = progressed ? progressed[0] : "/null";
+    // let regexp = new RegExp(`\/[a-z]{1,}|\/`);
+    // let pathname = this.props.location.pathname;
+    // let progressed = regexp.exec(pathname);
+    // let excuted = progressed ? progressed[0] : "/null";
 
 
-    if (pathname === "/") {
-      ForumStateInitialState.topic = "free" as Topic
-    } else if ( !["free", "clan", "together", "tips"].includes(excuted.substr(1))) {
-      this.props.history.push('/error/404');
-    } else {
-      ForumStateInitialState.topic = excuted.substr(1) as Topic
-    }
+    // if (pathname === "/") {
+    //   ForumStateInitialState.topic = "free" as Topic
+    // } else if ( !["free", "clan", "together", "tips"].includes(excuted.substr(1))) {
+    //   this.props.history.push('/error/404');
+    // } else {
+    //   ForumStateInitialState.topic = excuted.substr(1) as Topic
+    // }
 
-    const splittedPathname = this.props.location.pathname.split('/');
+    // const splittedPathname = this.props.location.pathname.split('/');
 
-    if (splittedPathname.length === 4) {
-      if (splittedPathname[2] === "post") {
-        ForumStateInitialState.postId = parseInt(splittedPathname[3]);
-      }
-    }
-
-
-    // if (splittedPathname.length === 3) {
-    //   if (splittedPathname[2] === "editor") {
+    // if (splittedPathname.length === 4) {
+    //   if (splittedPathname[2] === "post") {
+    //     ForumStateInitialState.postId = parseInt(splittedPathname[3]);
     //   }
     // }
 
-    this.newTopic = ForumStateInitialState.topic;
-    this.reactor = new ForumReactor(ForumStateInitialState);
-    this.reactorControl = this.reactor.getReactorControl();
+
+    // // if (splittedPathname.length === 3) {
+    // //   if (splittedPathname[2] === "editor") {
+    // //   }
+    // // }
+
+    // this.newTopic = ForumStateInitialState.topic;
+    // this.reactor = new ForumReactor(ForumStateInitialState);
+    // this.reactorControl = this.reactor.getReactorControl();
 
   }
 
@@ -115,7 +109,6 @@ class Main extends React.PureComponent<RouteComponentProps> {
   render(){
     return(
       <React.Fragment>
-
          <R6Navigation></R6Navigation>
          <R6Login></R6Login>
          <PADDER>

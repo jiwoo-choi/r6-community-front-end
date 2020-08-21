@@ -2,8 +2,6 @@ import { Editor } from '@toast-ui/react-editor'
 import React  from 'react'
 import { Button } from 'semantic-ui-react'
 import { Input } from 'semantic-ui-react'
-import 'codemirror/lib/codemirror.css';
-import '@toast-ui/editor/dist/toastui-editor.css';
 
 import styled from 'styled-components'
 import { RANKAPI } from '../../../../../Util/Entity';
@@ -54,6 +52,12 @@ class R6Editor extends React.Component<Props>{
     componentDidMount(){
         window.scrollTo(0,0);
         this.getInstanceofEditor()?.addHook('addImageBlobHook', this.onAddImageBlob.bind(this))   
+        this.props.editor?.editSetUp(this.handleInsertHandler.bind(this))
+    }
+
+    handleInsertHandler(title:string, content:string){
+        this.titleRef.current!.inputRef.current.value = title
+        this.getInstanceofEditor()?.setHtml(content, true)
     }
 
     componentWillMount(){
@@ -166,7 +170,11 @@ class R6Editor extends React.Component<Props>{
         // const value = regExp.exec(this.getHtml()!);
         // console.log(value);
         // console.log(this.getHtml()!);
-        this.props.editor?.upload(this.titleRef.current!.inputRef.current.value, str, imgSrc);
+        if (this.props.editor!.isEditMode) {
+            this.props.editor!.edit(this.titleRef.current!.inputRef.current.value, str, imgSrc);
+        } else {
+            this.props.editor!.upload(this.titleRef.current!.inputRef.current.value, str, imgSrc);
+        }
     }
     
     render(){
@@ -182,7 +190,7 @@ class R6Editor extends React.Component<Props>{
                 <CONTAINER>
                 <FLUIDDIV>
                     <Input
-                        size={'large'}
+                        size={'huge'}
                         style={{width:'100%'}}
                         placeholder={"제목을 입력해주세요"}
                         ref={this.titleRef}
